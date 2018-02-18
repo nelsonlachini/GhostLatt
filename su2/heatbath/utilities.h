@@ -1,7 +1,7 @@
 //Notations:
 //.SU2 vector refers to the real vector u = (u0,u1,u2,u3);
 //.SU2 matrix refers to the matrix A composed from the SU2 vector: A = u0.1 + u1.sx + u2.sy + u3.sz,
-//where sx,sy,sz are the 2x2 sigma matrix and 1 is the 2x2 identity matrix.
+//	where sx,sy,sz are the 2x2 sigma matrix and 1 is the 2x2 identity matrix.
 
 double * getelv(double * A , int i);
 	//Returns the i element of the SU2 vector A.
