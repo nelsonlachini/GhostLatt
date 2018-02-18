@@ -5,8 +5,8 @@
 
 int N;
 
-double * getelv(double * vector , int i){
-	return vector + i;
+double * getelv(double * A , int i){
+	return A + i;
 }
 
 double complex getelm(double * vector , int i, int j){
@@ -28,8 +28,8 @@ double complex getelm(double * vector , int i, int j){
 	}
 }
 
-void printv(double * vector){
-	printf("(%lf , %lf , %lf , %lf) \n", vector[0],vector[1],vector[2],vector[3]);
+void printv(double * A){
+	printf("(%lf , %lf , %lf , %lf) \n", A[0],A[1],A[2],A[3]);
 }
 
 void printr(double r){
@@ -37,16 +37,14 @@ void printr(double r){
 }		
 
 void printc(double complex z){
-	//function to print a complex doubles
 	printf(" %lf + %lf i ", creal(z) , cimag(z) ); 
 }			  
 
-void fprintc( FILE * file , double complex z){
-	fprintf(file, " %lf + %lf i", creal(z) , cimag(z) );
+void fprintc( FILE * f , double complex z){
+	fprintf(f, " %lf + %lf i", creal(z) , cimag(z) );
 }
 
 void printm(double * A){
-	//function to print a square matrix (2x2) of complex doubles
 	int i,j;
 	for(i=0 ; i<2 ; i++){
 		for(j=0 ; j<2 ; j++){
@@ -57,55 +55,49 @@ void printm(double * A){
 	printf("\n");
 }
 
-void fprintm(FILE * file , double * A){
+void fprintm(FILE * f , double * A){
 	int i,j;
 	for(i=0 ; i<2 ; i++){
 		for(j=0 ; j<2 ; j++){
-			fprintc(file,  getelm(A,i,j) );
+			fprintc(f,  getelm(A,i,j) );
 		}
-		fprintf(file, "\n");
+		fprintf(f, "\n");
 	}
-	fprintf(file, "\n");
+	fprintf(f, "\n");
 }
 
-double * getU(double * lattice, int t , int x , int y, int z , int mi){
-	return ( lattice + t*N*N*N*4*4 + x*N*N*4*4 + y*N*4*4 + z*4*4 + mi*4);
+double * getU(double * L, int t , int x , int y, int z , int mu){
+	return ( L + t*N*N*N*4*4 + x*N*N*4*4 + y*N*4*4 + z*4*4 + mu*4);
 }
 
-void printLattice(double * lattice){
+void printLattice(double * L){
 	int t,x,y,z,mi;
-	printf("------------------");
-	
 	for(t=0 ; t<N ; t++){
 		for(x=0 ; x<N ; x++){
 			for(y=0 ; y<N ; y++){
 				for(z=0 ; z<N ; z++){
 					for(mi=0 ; mi<4; mi++){
 						printf("\n");
-						printm( getU(lattice,t,x,y,z,mi) );
+						printm( getU(L,t,x,y,z,mi) );
 					}
 				}
 			}
 		}
-	}
-	printf("------------------");
+	}	
 }
 
-void copyv(double * out , double * in){
-	//copy the values of the elements of in matrix to the out matrix
+void copyv(double * vout , double * vin){
 	int i;
 	for(i=0 ; i<4 ; i++){
-		*( getelv(out,i) ) = *( getelv(in,i) );
+		*( getelv(vout,i) ) = *( getelv(vin,i) );
 	}
 }
 
-double * randSU2v(double * vector ,long * seed , double parameter){
+void randSU2v(double * A ,long * seed , double eps){
 	int j;
-	float eps = parameter-0.01;				//displacement from identity
-	double r[3] , x[4];	
-		
+	double r[3] , x[4];
+	
 	x[0] = signal( ran0(seed) - 0.5 )*sqrt(1-eps*eps);
-
 	for(j=0 ; j < 3 ; j++){
 		r[j] = ran0(seed) - 0.5;
 	}
@@ -113,24 +105,23 @@ double * randSU2v(double * vector ,long * seed , double parameter){
 	for(j=1 ; j < 4 ; j++){
 		x[j] = eps*r[j-1]/sqrt( r[0]*r[0] + r[1]*r[1] + r[2]*r[2] );
 	}
-
 	for(j=0 ; j < 4 ; j++){
-		*getelv(vector , j) = x[j];
+		*getelv(A , j) = x[j];
 	}	
 }
 
-void initl(double * lattice , float parameter , long * seed){
+void initl(double * L , float eps , long * seed){
 	int t,x,y,z,mi;
 	for(t=0 ; t<N ; t++){
 		for(x=0 ; x<N ; x++){
 			for(y=0 ; y<N ; y++){
 				for(z=0 ; z<N ; z++){
 					for(mi=0 ; mi<4; mi++){
-						if(parameter == 0){				
-							setidv( getU(lattice, t,x,y,z,mi) );							
+						if(eps == 0){
+							setidv( getU(L, t,x,y,z,mi) );
 						}
-						else{							
-							randSU2v(getU(lattice, t,x,y,z,mi) , seed , parameter);							
+						else{
+							randSU2v(getU(L, t,x,y,z,mi) , seed , eps);
 						}
 					}
 				}
@@ -139,7 +130,7 @@ void initl(double * lattice , float parameter , long * seed){
 	}
 }
 
-void reunitl(double * lattice){
+void reunitl(double * L){
 	int t,x,y,z,mi,i;	
 	double * aux_link;
 	double norm;
@@ -148,14 +139,11 @@ void reunitl(double * lattice){
 			for(y=0 ; y<N ; y++){
 				for(z=0 ; z<N ; z++){
 					for(mi=0 ; mi<4; mi++){
-						aux_link = getU(lattice, t,x,y,z,mi);						
-						norm = sqrt(detv(aux_link));
-						//printc(detv(aux_link));
+						aux_link = getU(L, t,x,y,z,mi);						
+						norm = sqrt(detv(aux_link));						
 						for(i=0;i<4;i++){			
 							*getelv(aux_link , i) /= norm;
 						}
-						//printr(detv(aux_link));
-						//printf("\n");
 					}
 				}
 			}
@@ -164,9 +152,8 @@ void reunitl(double * lattice){
 }
 
 int getStep( int coord , int dcoord ){		
-	//return the lattice coordinate given the increment(useful when there is a chance to get a negative coordinate)
 	int aux = (coord + dcoord)%N;
-	if(aux<0)	
+	if(aux<0)
 		return N+aux;
 	return aux;
 }
@@ -179,10 +166,6 @@ void copyl(double * Lout , double * Lin){
 				for(z=0 ; z<N ; z++){
 					for(mi=0 ; mi<4; mi++){
 						copyv( getU(Lout, t,x,y,z,mi) , getU(Lin,t,x,y,z,mi) );
-						//for(a=0 ; a<4 ; a++){
-						//	*(Lout + t*N*N*N*4*4 + x*N*N*4*4 + y*N*4*4 + z*4*4 + mi*4 + a)
-						//			= *(Lin + t*N*N*N*4*4 + x*N*N*4*4 + y*N*4*4 + z*4*4 + mi*4 + a);							
-						//}
 					}
 				}
 			}
@@ -190,17 +173,17 @@ void copyl(double * Lout , double * Lin){
 	}
 }
 
-double * getg(double * g, int t , int x , int y, int z){
-	return ( g + t*N*N*N*4 + x*N*N*4 + y*N*4 + z*4);
+double * getg(double * G, int t , int x , int y, int z){
+	return ( G + t*N*N*N*4 + x*N*N*4 + y*N*4 + z*4);
 }
 
-void printg(double * g){
+void printG(double * G){
 	int t,x,y,z;
 	for(t=0 ; t<N ; t++){
 		for(x=0 ; x<N ; x++){
 			for(y=0 ; y<N ; y++){
 				for(z=0 ; z<N ; z++){
-					printm(getg(g,t,x,y,z));
+					printm(getg(G,t,x,y,z));
 				}
 			}
 		}
@@ -208,7 +191,6 @@ void printg(double * g){
 }
 
 long * tseed(long * seed){
-	//returns a seed based in the system time		
 	*seed = time(0);	
 }
 

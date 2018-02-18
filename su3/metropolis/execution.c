@@ -33,7 +33,7 @@ void main(){
 	
 	N = 8;
 	beta = 5.5;
-	N_cf = 10;
+	N_cf = 100;
 	N_hit = 10;
 	eps = 0.24;
 	initial_order = 0;					//0 to all links initially equal to identity
