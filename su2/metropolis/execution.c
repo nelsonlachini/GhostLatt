@@ -7,7 +7,7 @@
 
 #define MAXIMUM_NAME_LENGTH 50
 
-////////////////////////////declaration of global variables
+//GLOBAL VARIABLES
 int N_cf;
 int N;
 int N_hit;
