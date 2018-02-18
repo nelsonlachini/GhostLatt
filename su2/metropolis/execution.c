@@ -25,6 +25,7 @@ void mcAverage(long * seed ){
 }
 
 void main(){
+	//LOCAL VARIABLES
 	long * global_seed;	
 	int j;	
 	float initial_order;	
