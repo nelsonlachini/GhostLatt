@@ -6,7 +6,7 @@
 
 #include "mcsimulation.c"
 
-////////////////////////////declaration of global variables
+//GLOBAL VARIABLES
 int N_cf;
 int N;
 int N_hit;
