@@ -1,7 +1,7 @@
 
 //Complete compile command: 
-//gcc-8 plainTest.c utilities.c algebra.c thermalization_hb.c measurement.c 
-//  inverters.c gaugefix.c instantontools.c nrutil.c statistics.c hoek_custom.c
+//gcc-8 exPlaquette.c src/utilities.c src/algebra.c src/thermalization_hb.c src/measurement.c src/inverters.c 
+// gaugefix.c instantontools.c nrutil.c statistics.c hoek_custom.c
 //  fox.c center.c -o temp -lm
 
 #include <stdlib.h>
@@ -51,7 +51,7 @@ int main(){
     // HOR thermalization while measuring plaquette
     for(unsigned int i=0 ; i<N_therm ; i++){
     	thermalizeLattice(lattice, 1, N_hb, N_mic);
-	printf("\rHOR Sweep %d : plaquette = %lf",i,wilsonLoopMeasureSym(lattice,1,1));	
+	    printf("\rHOR Sweep %d : plaquette = %lf",i,wilsonLoopMeasureSym(lattice,1,1));	
     }
     
     free(lattice);
