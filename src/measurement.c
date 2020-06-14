@@ -220,9 +220,7 @@ double measure_ghostp(double * lattice, double *** G, double * kz, int kSize, in
     return(((double)(clock() - dtime))/(CLOCKS_PER_SEC));
 }
 
-double measure_gluonp(double * lattice, double *** D, double * kz, int kSize, int j_Ncf){
-    //to pass a pointer to a pointer in C I must declare it as a pointer to a pointer to pointer
-    double gluonP(double * lattice, double kz){
+double gluonP(double * lattice, double kz){
         int t,x,y,z,a,mi;
         double D = 0e0;
 
@@ -267,8 +265,11 @@ double measure_gluonp(double * lattice, double *** D, double * kz, int kSize, in
             }
             return(D/(12.0*N*N*N*Nt));
         }
-    }
+}
 
+double measure_gluonp(double * lattice, double *** D, double * kz, int kSize, int j_Ncf){
+    //to pass a pointer to a pointer in C I must declare it as a pointer to a pointer to pointer
+    
     clock_t dtime = clock();
     int i;
     for(i=0;i<kSize;i++){
@@ -279,72 +280,73 @@ double measure_gluonp(double * lattice, double *** D, double * kz, int kSize, in
     return(((double)(clock() - dtime))/(CLOCKS_PER_SEC));
 }
 
-void spatialSmearing3(double * outlattice, double * inlattice, int n_smear, double alpha_smear){
-    double updateStaple(double * lattice , int t, int x, int y, int z, int mi , double * _staple){
-    	int i,ni;
-        int ani[4], ami[4];
-    	double * auxp = malloc((sizeof(double))*4);
-    	double * aux1 = malloc((sizeof(double))*4);
-    	double * aux2 = malloc((sizeof(double))*4);
-    	double * aux3 = malloc((sizeof(double))*4);
+double updateStapleMeasurement(double * lattice , int t, int x, int y, int z, int mi , double * _staple){
+    int i,ni;
+    int ani[4], ami[4];
+    double * auxp = malloc((sizeof(double))*4);
+    double * aux1 = malloc((sizeof(double))*4);
+    double * aux2 = malloc((sizeof(double))*4);
+    double * aux3 = malloc((sizeof(double))*4);
 
-        setquadv(&ami[0],mi);
-    	setzerov( _staple ); 		//now staple should be a zero DxD matrix
-        for(ni=1 ; ni<4 ; ni++){
-            if(ni != mi){
-    			setquadv(&ani[0],ni);
+    setquadv(&ami[0],mi);
+    setzerov( _staple ); 		//now staple should be a zero DxD matrix
+    for(ni=1 ; ni<4 ; ni++){
+        if(ni != mi){
+            setquadv(&ani[0],ni);
 
-                copyv(aux1 ,  getU( lattice,t , x , y , z , ni) );
-    			copyv( aux2 , getU( lattice, (t+ani[0])%Nt , (x+ani[1])%N , (y+ani[2])%N , (z+ani[3])%N , mi) );
-    			hermcv( aux3 , getU( lattice, (t+ami[0])%Nt , (x+ami[1])%N , (y+ami[2])%N , (z+ami[3])%N , ni)  );
+            copyv(aux1 ,  getU( lattice,t , x , y , z , ni) );
+            copyv( aux2 , getU( lattice, (t+ani[0])%Nt , (x+ani[1])%N , (y+ani[2])%N , (z+ani[3])%N , mi) );
+            hermcv( aux3 , getU( lattice, (t+ami[0])%Nt , (x+ami[1])%N , (y+ami[2])%N , (z+ami[3])%N , ni)  );
 
-    			mmprodv(auxp, aux1 , aux2 );
-    			mmprodv(auxp, auxp , aux3);
+            mmprodv(auxp, aux1 , aux2 );
+            mmprodv(auxp, auxp , aux3);
 
-    			sumv(_staple , _staple , auxp);
+            sumv(_staple , _staple , auxp);
 
 
-    			hermcv(aux1 , getU( lattice, getStepT(t,-ani[0]), getStep(x,-ani[1]) , getStep(y,-ani[2]) , getStep(z,-ani[3]) , ni));
-    			copyv(aux2 ,getU( lattice, getStepT(t,-ani[0]) , getStep(x,-ani[1]) , getStep(y,-ani[2]) , getStep(z,-ani[3]) , mi) );
-    			copyv(aux3 , getU( lattice, getStepT(t,ami[0]-ani[0]), getStep(x,ami[1]-ani[1]) , getStep(y,ami[2]-ani[2]) , getStep(z,ami[3]-ani[3]) , ni));
+            hermcv(aux1 , getU( lattice, getStepT(t,-ani[0]), getStep(x,-ani[1]) , getStep(y,-ani[2]) , getStep(z,-ani[3]) , ni));
+            copyv(aux2 ,getU( lattice, getStepT(t,-ani[0]) , getStep(x,-ani[1]) , getStep(y,-ani[2]) , getStep(z,-ani[3]) , mi) );
+            copyv(aux3 , getU( lattice, getStepT(t,ami[0]-ani[0]), getStep(x,ami[1]-ani[1]) , getStep(y,ami[2]-ani[2]) , getStep(z,ami[3]-ani[3]) , ni));
 
-    			mmprodv(auxp , aux1 , aux2);
-    			mmprodv(auxp , auxp , aux3);
+            mmprodv(auxp , aux1 , aux2);
+            mmprodv(auxp , auxp , aux3);
 
-    			sumv(_staple , _staple , auxp);
-    		}
-    	}
-    	free(auxp);
-    	free(aux1);
-    	free(aux2);
-    	free(aux3);
+            sumv(_staple , _staple , auxp);
+        }
     }
+    free(auxp);
+    free(aux1);
+    free(aux2);
+    free(aux3);
+}
 
-    void spatialSmearStep(double * outlattice, double * inlattice, double alpha_smear){
-        int t,x,y,z,i,ai[4],j,aj[4];
-        double * aux = malloc(sizeof(double)*4);
-        double * herm = malloc(sizeof(double)*4);
-        double * sum = malloc(sizeof(double)*4);
-        for(t=0;t<Nt;t++){
-            for(x=0;x<N;x++){
-                for(y=0;y<N;y++){
-                    for(z=0;z<N;z++){
-                        for(i=1;i<4;i++){
-                            cmprodv(sum, alpha_smear, getU(inlattice,t,x,y,z,i));
-                            updateStaple(inlattice, t,x,y,z,i,aux);
-                            //hermcv(aux,aux);
-                            sumv(sum,sum,aux);
-                            reunitv(sum);
-                            copyv(getU(outlattice,t,x,y,z,i) , sum);
-                        }
+void spatialSmearStep(double * outlattice, double * inlattice, double alpha_smear){
+    int t,x,y,z,i,ai[4],j,aj[4];
+    double * aux = malloc(sizeof(double)*4);
+    double * herm = malloc(sizeof(double)*4);
+    double * sum = malloc(sizeof(double)*4);
+    for(t=0;t<Nt;t++){
+        for(x=0;x<N;x++){
+            for(y=0;y<N;y++){
+                for(z=0;z<N;z++){
+                    for(i=1;i<4;i++){
+                        cmprodv(sum, alpha_smear, getU(inlattice,t,x,y,z,i));
+                        updateStapleMeasurement(inlattice, t,x,y,z,i,aux);
+                        //hermcv(aux,aux);
+                        sumv(sum,sum,aux);
+                        reunitv(sum);
+                        copyv(getU(outlattice,t,x,y,z,i) , sum);
                     }
                 }
             }
         }
-        free(sum);
-        free(herm);
-        free(aux);
     }
+    free(sum);
+    free(herm);
+    free(aux);
+}
+
+void spatialSmearing3(double * outlattice, double * inlattice, int n_smear, double alpha_smear){
     int i;
     copyl(outlattice,inlattice);
     double * templattice = malloc(sizeof(double)*dimLattice);

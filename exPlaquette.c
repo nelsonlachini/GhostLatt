@@ -1,9 +1,4 @@
 
-//Complete compile command: 
-//gcc-8 exPlaquette.c src/utilities.c src/algebra.c src/thermalization_hb.c src/measurement.c src/inverters.c 
-// gaugefix.c instantontools.c nrutil.c statistics.c hoek_custom.c
-//  fox.c center.c -o temp -lm
-
 #include <stdlib.h>
 #include <complex.h>
 #include <stdio.h>
@@ -56,5 +51,5 @@ int main(){
     
     free(lattice);
 
-    return 1;
+    return 0;
 }

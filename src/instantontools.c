@@ -209,29 +209,30 @@ double coolLattice(double * lattice, int Ncool){
 	return( ((double)(clock() - stime))/CLOCKS_PER_SEC);
 }
 
-double coolLatticeBorders(double * lattice, int Ncool){
-	void coolingStepBorder(double * lattice){
-		int t,x,y,z,mi;
-		double * staple = malloc(sizeof(double)*4);
-		double inf = 2, sup = N-2;
-		for(t=0 ; t<N ; t++){
-			for(x=0 ; x<N ; x++){
-				for(y=0 ; y<N ; y++){
-					for(z=0 ; z<N ; z++){
-						for(mi=0 ; mi<4 ; mi++){
-							if( ((t<inf) || (t>sup)) || ((x<inf) || (x>sup)) || ((y<inf) || (y>sup)) || ((z<inf) || (z>sup)) ){
-								//printpos(t,x,y,z,mi);
-								updateStaple(lattice ,t,x,y,z,mi , staple);
-								hermcv( staple , staple);
-								cmprodv( getU(lattice,t,x,y,z,mi), 1e0/sqrt(detv(staple)) , staple);
-							}
+void coolingStepBorder(double * lattice){
+	int t,x,y,z,mi;
+	double * staple = malloc(sizeof(double)*4);
+	double inf = 2, sup = N-2;
+	for(t=0 ; t<N ; t++){
+		for(x=0 ; x<N ; x++){
+			for(y=0 ; y<N ; y++){
+				for(z=0 ; z<N ; z++){
+					for(mi=0 ; mi<4 ; mi++){
+						if( ((t<inf) || (t>sup)) || ((x<inf) || (x>sup)) || ((y<inf) || (y>sup)) || ((z<inf) || (z>sup)) ){
+							//printpos(t,x,y,z,mi);
+							updateStaple(lattice ,t,x,y,z,mi , staple);
+							hermcv( staple , staple);
+							cmprodv( getU(lattice,t,x,y,z,mi), 1e0/sqrt(detv(staple)) , staple);
 						}
 					}
 				}
 			}
 		}
-		free(staple);
 	}
+	free(staple);
+}
+
+double coolLatticeBorders(double * lattice, int Ncool){
 	clock_t stime = clock();
 	int i;
 	for(i=0;i<Ncool;i++){

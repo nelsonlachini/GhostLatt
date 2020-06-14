@@ -410,6 +410,33 @@ double stochastic(double * U , double * g , double * e2, double p){
 	return( ((double)(clock() - stime))/CLOCKS_PER_SEC);
 }
 
+void computew(double * wout, double * U, double * g,int t, int x, int y, int z){
+	//STOPPED HERE
+	int i,mi,ami[4];
+	double * h = malloc(sizeof(double)*4);
+	double * aux1 = malloc(sizeof(double)*4);
+	double * aux2 = malloc(sizeof(double)*4);
+	setzerov(h);
+	for(mi=0;mi<4;mi++){
+		setquadv(&ami[0],mi);
+
+		hermcv( aux1 , getU(U , getStepT(t,-ami[0]) , getStep(x,-ami[1]) , getStep(y,-ami[2]) , getStep(z,-ami[3]) ,mi) );
+		hermcv( aux2 , getg(g, getStepT(t,-ami[0]) , getStep(x,-ami[1]) , getStep(y,-ami[2]) , getStep(z,-ami[3])) );
+		mmprodv(aux1 , aux1 , aux2);
+		sumv(h , h , aux1);
+
+		hermcv( aux2 , getg(g, getStepT(t,ami[0]) , getStep(x,ami[1]) , getStep(y,ami[2]) , getStep(z,ami[3]) ) );
+		mmprodv(aux1 , getU(U,t,x,y,z,mi) , aux2);
+		sumv(h , h , aux1);
+	}
+	mmprodv(wout,getg(g,t,x,y,z),h);
+	free(h);
+	free(aux1);
+	free(aux2);
+}
+
+/*
+//in development
 double fourier(double * U , double * g , double * e2, double alpha){
 	void computew(double * wout, double * U, double * g,int t, int x, int y, int z){
 		//STOPPED HERE
@@ -491,6 +518,7 @@ double fourier(double * U , double * g , double * e2, double alpha){
 	free(lap);
 	return( ((double)(clock() - stime))/CLOCKS_PER_SEC);
 }
+*/
 
 //AUTOMATIZATION
 double fixLatticeStoch(double * lout, double * lin, double * g, double p_stoch, double e2tol){
@@ -949,7 +977,7 @@ double stochasticoverv(double * U , double * g , double * e2, double p, long * s
 */
 
 
-
+/*
 double calce6(double * lattice , double * g){
 	int xni,ni,j;
 	double e6 = 0.E0;
@@ -1045,3 +1073,4 @@ double calce6(double * lattice , double * g){
 	free(U);
 	return(e6/(3.0*4*totalV));
 }
+*/

@@ -24,6 +24,8 @@ void coolingStep(double * lattice);
 
 double coolLattice(double * lattice, int Ncool);
 
+void coolingStepBorder(double * lattice);
+
 double coolLatticeBorders(double * lattice, int Ncool);
 
 void APEsmearStep(double * lattice, double alphaape);

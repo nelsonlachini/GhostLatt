@@ -137,6 +137,8 @@ void invMv(double * vout, double * vin);
 
 void invMc(double complex * vout, double complex * vin);
 
+int bubbleCount4(int v1,int v2,int v3,int v4);
+
 int eps4(int a, int b , int c , int d);
 
 int eps4tilde(int a, int b, int c, int d);

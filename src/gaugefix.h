@@ -32,7 +32,7 @@ double overrelaxation(double * U , double * g, double * e2 , double omega);
 
 double stochastic(double * U , double * g , double * e2, double p);
 
-double fourier(double * U , double * g , double * e2, double alpha);
+// double fourier(double * U , double * g , double * e2, double alpha);
 
 //AUTOMATIZATION
 double fixLatticeStoch(double * lout, double * lin, double * g, double p_stoch, double e2tol);
@@ -51,6 +51,14 @@ double calibrate_cornell(double * lattice , double tol, double step_size, double
 
 double calibrate_stoc(double * lattice , double tol);
 
-double calce6(double * lattice , double * g);
+double * getQ(int ni , int xni);
+
+double * getAvgQ(int ni);
+
+void calcAvgQ(int ni , double * sum);
+
+void calcQni( int ni  , double * lattice);
+
+//double calce6(double * lattice , double * g);
 
 #endif

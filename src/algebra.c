@@ -958,10 +958,9 @@ void invMc(double complex * vout, double complex * vin){
 	copymc(vout,temp,2);
 }
 
-int eps4(int a, int b , int c , int d){
-	int bubbleCount4(int v1,int v2,int v3,int v4){
+int bubbleCount4(int v1,int v2,int v3,int v4){
 		int pcount=0, i,j, aux;
-		int v[4] = {a,b,c,d};
+		int v[4] = {v1,v2,v3,v4};
 		int size = 4;
 		for(i=1;i<size;i++){
 			for(j=0;j<size-i;j++){
@@ -975,6 +974,9 @@ int eps4(int a, int b , int c , int d){
 		}
 		return(pcount);
 	}
+
+int eps4(int a, int b , int c , int d){
+	
 	if( (a==b)||(a==c)||(a==d)||(b==c)||(b==d)||(c==d) ){
 		return(0);
 	}
