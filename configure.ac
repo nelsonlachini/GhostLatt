@@ -20,39 +20,40 @@ CXX="gcc-8"
 CXXFLAGS="$AM_CXXFLAGS $CXXFLAGS -O2"
 LDFLAGS="$AM_LDFLAGS $LDFLAGS"
 LIBS="$LIBS -lm"
+
 AC_MSG_CHECKING([that a minimal LGT_C program compiles]);
 AC_LINK_IFELSE(
-        [AC_LANG_SOURCE([[
-#include <stdlib.h>
-#include <complex.h>
-#include <stdio.h>
+[AC_LANG_SOURCE([[
+    #include <stdlib.h>
+    #include <complex.h>
+    #include <stdio.h>
 
-// global variables (to do: change that to local)
-const int N = 4;
+    // global variables (to do: change that to local)
+    const int N = 4;
 
-const int Nt = N;
-const int totalV = N*N*N*Nt;
-const int spatialV = N*N*N;
-const int dimLattice = totalV*4*4;
-const int colorV = totalV*3;
-const int N2 = N*N;
+    const int Nt = N;
+    const int totalV = N*N*N*Nt;
+    const int spatialV = N*N*N;
+    const int dimLattice = totalV*4*4;
+    const int colorV = totalV*3;
+    const int N2 = N*N;
 
 
-int main(){
+    int main(){
 
-    //LOCAL PARAMETERS
-    int N_therm = 1000;		// #thermalization sweeps
-    int N_hb 	= 1;		// #heat-bath steps per sweep
-    int N_mic 	= N/2;	        // #overrelaxation steps per sweep
-    
-    double initial_order = 0;			//0 is cold start
+        //LOCAL PARAMETERS
+        int N_therm = 1000;		// #thermalization sweeps
+        int N_hb 	= 1;		// #heat-bath steps per sweep
+        int N_mic 	= N/2;	        // #overrelaxation steps per sweep
+        
+        double initial_order = 0;			//0 is cold start
 
-    return(0);
-}	
-    ]])],
-        [AC_MSG_RESULT([yes])],
-    [AC_MSG_RESULT([no])]
-    [AC_MSG_ERROR([Could not compile a minimal LGT_C program])])
+        return(0);
+    }	
+]])],
+[AC_MSG_RESULT([yes])],
+[AC_MSG_RESULT([no])]
+[AC_MSG_ERROR([Could not compile a minimal LGT_C program])])
 
 AC_SUBST([AM_CXXFLAGS])
 AC_SUBST([AM_LDFLAGS])
