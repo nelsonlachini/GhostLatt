@@ -2,11 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([LGT_C], [0.1], [nelson.lachini@ed.ac.uk])
+AC_INIT([LGT_C], [0.1], [nelsonlachini@gmail.com])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
-AC_CONFIG_SRCDIR([exPlaquette.c])
+AC_CONFIG_SRCDIR([src/utilities.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([subdir-objects])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])

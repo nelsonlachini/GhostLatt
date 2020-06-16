@@ -4,17 +4,17 @@
 #include <stdio.h>
 
 //maximum set of includes
-#include "src/global.h"
-#include "src/thermalization_hb.h"
-#include "src/measurement.h"
-#include "src/gaugefix.h"
-#include "src/inverters.h"
-#include "src/instantontools.h"
-#include "src/nrutil.h"
-#include "src/statistics.h"
-#include "src/hoek_custom.h"
-#include "src/fox.h"
-#include "src/center.h"
+#include <src/global.h>
+#include <src/thermalization_hb.h>
+#include <src/measurement.h>
+#include <src/gaugefix.h>
+#include <src/inverters.h>
+#include <src/instantontools.h>
+#include <src/nrutil.h>
+#include <src/statistics.h>
+#include <src/hoek_custom.h>
+#include <src/fox.h>
+#include <src/center.h>
 
 // global variables (to do: change that to local)
 const int N = 8;
