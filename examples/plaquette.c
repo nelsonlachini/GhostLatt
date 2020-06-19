@@ -10,7 +10,6 @@
 
 // global variables (to do: change that to local)
 const int N = 8;
-const double beta = 2.2;
 
 const int Nt = N;
 const int totalV = N*N*N*Nt;
@@ -25,6 +24,7 @@ int main(){
     tseed();			//setting global seed
 
     //LOCAL PARAMETERS
+    double beta = 2.2;
     int N_therm = 1000;		// #thermalization sweeps
     int N_hb 	= 1;		// #heat-bath steps per sweep
     int N_mic 	= N/2;	        // #overrelaxation steps per sweep
@@ -37,7 +37,7 @@ int main(){
 
     // HOR thermalization while measuring plaquette
     for(unsigned int i=0 ; i<N_therm ; i++){
-    	thermalizeLattice(lattice, 1, N_hb, N_mic);
+    	thermalizeLattice(lattice, beta, 1, N_hb, N_mic);
 	    printf("\rHOR Sweep %d : plaquette = %lf",i,wilsonLoopMeasureSym(lattice,1,1));	
     }
     

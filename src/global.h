@@ -14,14 +14,13 @@
 #define NBIN 50
 
 extern const int N;
+
 extern const int Nt;
 extern const int N2;
 extern const int spatialV;
 extern const int totalV;
 extern const int colorV;
 extern const int dimLattice;
-
-extern const double beta;
 
 extern long * global_seed;
 
