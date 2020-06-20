@@ -3,6 +3,8 @@
 
 #include <complex.h>
 
+#include "global.h"
+
 int getSignal(double number);
 
 ////////////////////////////// SU2 MATRIX/VECTOR ALGEBRA

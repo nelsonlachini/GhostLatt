@@ -5,6 +5,8 @@
 
 //maximum set of includes
 #include <src/global.h>
+#include "src/algebra.h"
+#include "src/utilities.h"
 #include <src/thermalization_hb.h>
 #include <src/measurement.h>
 
@@ -25,23 +27,23 @@ int main(){
 
     //LOCAL PARAMETERS
     double beta = 2.2;
-    int N_therm = 1000;		// #thermalization sweeps
-    int N_hb 	= 1;		// #heat-bath steps per sweep
-    int N_mic 	= N/2;	        // #overrelaxation steps per sweep
-    
-    double initial_order = 0;			//0 is cold start
+    double initial_order = 0;		// 0 is cold start
+    int N_therm = 1000;		        // #thermalization sweeps
+    int N_hb 	= 1;		        // #heat-bath steps per sweep
+    int N_mic 	= N/2;	            // #overrelaxation steps per sweep
 
-    double * lattice = malloc(sizeof(double)*dimLattice);	//allocating lattice (to do: encapsulate it)
+    LatticeSU2 lattice;
+    defineLatticeSU2(&lattice , N , Nt);
 
-    initl(lattice , initial_order);			//initialize the lattice
+    initl(&lattice , initial_order);			//initialize the lattice
 
-    // HOR thermalization while measuring plaquette
+    // // HOR thermalization while measuring plaquette
     for(unsigned int i=0 ; i<N_therm ; i++){
-    	thermalizeLattice(lattice, beta, 1, N_hb, N_mic);
-	    printf("\rHOR Sweep %d : plaquette = %lf",i,wilsonLoopMeasureSym(lattice,1,1));	
+    	thermalizeLattice(&lattice, beta, 1, N_hb, N_mic);
+	    printf("\rHOR Sweep %d : plaquette = %lf",i,wilsonLoopMeasureSym(&lattice,1,1));	
     }
     
-    free(lattice);
+    free(lattice.U);
 
     return 0;
 }

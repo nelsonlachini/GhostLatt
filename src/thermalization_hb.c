@@ -1,7 +1,8 @@
 #include "thermalization_hb.h"
-#include "global.h"
+#include "utilities.h"
+#include "algebra.h"
 
-double updateStaple(double * lattice , int t, int x, int y, int z, int mi , double * _staple){
+void updateStaple(LatticeSU2 * lattice , int t, int x, int y, int z, int mi , double * _staple){
 	int i,ni;
 	int ami[4] = {0,0,0,0};
 	int ani[4];
@@ -87,7 +88,7 @@ void microCanonicalStep(double * link, double * _staple){
 	free(staple_aux);
 }
 
-void microCanonicalUpdate(double * lattice){
+void microCanonicalUpdate(LatticeSU2 * lattice){
 	int t,x,y,z,mi;
 	double * staple = malloc( sizeof(double)*4 );
 	for(t=0 ; t<Nt ; t++){
@@ -112,7 +113,7 @@ void heatBathStep(double * link, double a, double * Vdagger , double beta){
 	free(X);
 }
 
-void heatbathUpdate(double * lattice, double beta){
+void heatbathUpdate(LatticeSU2 * lattice, double beta){
 	int t,x,y,z,mi;
 	double * staple = malloc( sizeof(double)*4 );
 	double * Vdagger= malloc( sizeof(double)*4 );
@@ -136,7 +137,7 @@ void heatbathUpdate(double * lattice, double beta){
 	free(Vdagger);
 }
 
-void overrelaxationStepSU2(double * lattice , int t, int x, int y, int z, int mi, double * Vdagger){
+void overrelaxationStepSU2(LatticeSU2 * lattice , int t, int x, int y, int z, int mi, double * Vdagger){
 	double * Udagger = malloc((sizeof(double))*4);
 	hermcv( Udagger , getU( lattice,t,x,y,z,mi));
 	mmprodv( Udagger , Udagger , Vdagger);
@@ -145,7 +146,7 @@ void overrelaxationStepSU2(double * lattice , int t, int x, int y, int z, int mi
 	free(Udagger);
 }
 
-double updateLattice(double * lattice, double beta, int N_hb, int N_mc){
+double updateLattice(LatticeSU2 * lattice, double beta, int N_hb, int N_mc){
 	clock_t dtime = clock();
 	int i;
 	//int N_hb = 1; //default heat bath value
@@ -161,7 +162,7 @@ double updateLattice(double * lattice, double beta, int N_hb, int N_mc){
 	return( ((double)dtime)/CLOCKS_PER_SEC );
 }
 
-double thermalizeLattice(double * lattice, double beta, int n , int n_hb , int n_over){
+double thermalizeLattice(LatticeSU2 * lattice, double beta, int n , int n_hb , int n_over){
 	int i;
 	clock_t dtime = clock();
 

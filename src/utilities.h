@@ -4,6 +4,8 @@
 #include <complex.h>
 #include <stdio.h>
 
+#include "global.h"
+
 //////////////////////////////ran0 implementation
 
 float ran0(long *idum);
@@ -26,16 +28,15 @@ void printm(double * A);
 
 void fprintm(FILE * file , double * A);
 
-double * getU(double * lattice, int t , int x , int y, int z , int mi);
+double * getU(LatticeSU2 * lattice, int t , int x , int y, int z , int mi);
 
-double * getUdim(double * lattice, int t , int x , int y, int z , int mi, int N);
+double * getUdim(LatticeSU2 * lattice, int t , int x , int y, int z , int mi, int N);
 
-void printLattice(double * lattice);
+void printLattice(LatticeSU2 * lattice);
 
 void copyv(double * out , double * in);
 
-double * randSU2v(double * vector ,long * seed , double parameter);
-
+void randSU2v(double * vector ,long * seed , double parameter);
 
 ////////////////////////////// GENERAL MATRIX FUNCTIONS WITH DOUBLE VARIABLES
 
@@ -71,9 +72,9 @@ void converttov(double * vout, double complex * vin);
 
 void setquadv(int * amu, int mu);
 
-void initl(double * lattice , float parameter);
+void initl(LatticeSU2 * lattice , float parameter);
 
-void reunitl(double * lattice);
+void reunitl(LatticeSU2 * lattice);
 
 void reunitv(double * vector);
 
@@ -83,7 +84,7 @@ double getStep( double coord , double dcoord );
 
 double getStepT( double coord , double dcoord );
 
-void copyl(double * Lout , double * Lin);
+void copyl(LatticeSU2 * Lout , LatticeSU2 * Lin);
 
 double * getg(double * g, int t , int x , int y, int z);
 
@@ -93,7 +94,7 @@ void tseed();
 
 void progress_panel(int i, int total);
 
-void save_lattice(double * lattice, char * file_name);
+void save_lattice(LatticeSU2 * lattice, char * file_name);
 
 void save_vector(double complex * vector, char * file_name);
 
@@ -101,31 +102,31 @@ void save_rvector(double * vector, char * file_name);
 
 void getName(char * out, char * header , double num);
 
-void load_lattice(double * lattice , char * file_name);
+void load_lattice(LatticeSU2 * lattice , char * file_name);
 
 void load_rvector(double * vector , char * file_name);
 
 int compareLink(double * link1, double * link2);
 
-int compareLattice(double * lattice1, double * lattice2);
+int compareLattice(LatticeSU2 * lattice1, LatticeSU2 * lattice2);
 
 int comparevc(double complex * v1, double complex * v2, int dim);
 
 int comparevr(double * v1, double * v2, int dim);
 
-void reescaleGaugeField(double * out, double * in, double scale);
+void reescaleGaugeField(LatticeSU2 * out, LatticeSU2 * in, double scale);
 
-void reescaleLinks(double * out, double * in, double scale);
+void reescaleLinks(LatticeSU2 * out, LatticeSU2 * in, double scale);
 
 double compareVectorToPW(double * eigenvector, double pPW);
 
 double zeroMomentumTransform(double * vector);
 
-int isLatticeUnitary(double * lattice);
+int isLatticeUnitary(LatticeSU2 * lattice);
 
 int isLinkUnitary(double * link);
 
-int isLatticeNaN(double * lattice);
+int isLatticeNaN(LatticeSU2 * lattice);
 
 double max(double * array, int dim);
 
@@ -134,5 +135,7 @@ double min(double * array, int dim);
 double sortDouble(double i , double j);
 
 void printpos(double t, double x, double y , double z, double mi);
+
+void defineLatticeSU2(LatticeSU2 * lattice , int _N , int _Nt);
 
 #endif

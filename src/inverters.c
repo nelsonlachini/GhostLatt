@@ -1,10 +1,87 @@
 #include "inverters.h"
-#include "global.h"
+
+#include "utilities.h"
+#include "algebra.h"
 
 const int ITERATION_TOL = 5000;
 
 //CG and PM with real vectors
-double rfpapply(double * Mvout , double * U , double * vin , int dim){
+double rfpapply(double * Mvout , LatticeSU2 * lattice , double * vin , int dim){
+	//dim should be = N_colors * N^4
+	//the color index = a is fixed
+	//ATTENTION: a is 1,2,3 or 0,1,2?
+	clock_t dtime = clock();
+	int a,b,c,t,x,y,z,mi;
+	int ami[4];
+	double * Mvouttemp = malloc(sizeof(double)*dim);
+
+	setzerovr(Mvouttemp,dim);
+
+	for(t=0;t<lattice->Nt;t++){
+	for(x=0;x<lattice->N;x++){
+	for(y=0;y<lattice->N;y++){
+	for(z=0;z<lattice->N;z++){
+		for(a=0;a<3;a++){
+			for(mi=0;mi<4;mi++){
+
+				setzeroqvector(ami);
+				ami[mi]=1;
+
+
+				*getelvr(Mvouttemp,a,t,x,y,z) +=
+
+				getU(lattice,t,x,y,z,mi)[0]
+				*(
+				*getelvr(vin,a,t,x,y,z)
+				-*getelvr(vin,a,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
+				)
+
+				+
+
+				getU(lattice,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi)[0]
+				*(
+				*getelvr(vin,a,t,x,y,z)
+				-*getelvr(vin,a,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
+				);
+
+
+				//sum in b,c
+				for(b=0;b<3;b++){
+					for(c=0;c<3;c++){
+						if((a!=b) && (b!=c) && (a!=c)){
+							*getelvr(Mvouttemp,a,t,x,y,z) +=
+							aseps(a,b,c)*
+							(
+
+								getU(lattice,t,x,y,z,mi)[b+1]*
+								(
+									*getelvr(vin,c,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
+									-
+									0//*getelvr(vin,c,t,x,y,z)
+								)
+
+								-
+
+								getU(lattice,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi)[b+1]*
+								(
+									*getelvr(vin,c,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
+									-
+									0//*getelvr(vin,c,t,x,y,z)
+								)
+
+							);
+						}
+					}
+				}
+			}
+		}
+	}}}}
+	copyvr(Mvout,Mvouttemp,dim);
+	free(Mvouttemp);
+	return( (double)(clock()-dtime)/CLOCKS_PER_SEC );
+}
+
+double rfpapplyOrthogonal(double * Mvout , LatticeSU2 * lattice , double * vin , int dim){
 	//dim should be = N_colors * N^4
 	//the color index = a is fixed
 	//ATTENTION: a is 1,2,3 or 0,1,2?
@@ -16,154 +93,71 @@ double rfpapply(double * Mvout , double * U , double * vin , int dim){
 	setzerovr(Mvouttemp,dim);
 
 	for(t=0;t<Nt;t++){
-		for(x=0;x<N;x++){
-			for(y=0;y<N;y++){
-				for(z=0;z<N;z++){
-					for(a=0;a<3;a++){
-						for(mi=0;mi<4;mi++){
+	for(x=0;x<N;x++){
+	for(y=0;y<N;y++){
+	for(z=0;z<N;z++){
+		for(a=0;a<3;a++){
+			for(mi=0;mi<4;mi++){
 
-							setzeroqvector(ami);
-							ami[mi]=1;
+				setzeroqvector(ami);
+				ami[mi]=1;
 
 
+				*getelvr(Mvouttemp,a,t,x,y,z) +=
+
+				getU(lattice,t,x,y,z,mi)[0]
+				*(
+				*getelvr(vin,a,t,x,y,z)
+				-*getelvr(vin,a,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
+				)
+
+				+
+
+				getU(lattice,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi)[0]
+				*(
+				*getelvr(vin,a,t,x,y,z)
+				-*getelvr(vin,a,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
+				);
+
+
+				//sum in b,c
+
+				for(b=0;b<3;b++){
+					for(c=0;c<3;c++){
+						if((a!=b) && (b!=c) && (a!=c)){
 							*getelvr(Mvouttemp,a,t,x,y,z) +=
+							aseps(a,b,c)*
+							(
 
-							getU(U,t,x,y,z,mi)[0]
-							*(
-							*getelvr(vin,a,t,x,y,z)
-							-*getelvr(vin,a,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
-							)
+								getU(lattice,t,x,y,z,mi)[b+1]*
+								(
+									*getelvr(vin,c,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
+									-
+									*getelvr(vin,c,t,x,y,z)
+								)
 
-							+
+								-
 
-							getU(U,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi)[0]
-							*(
-							*getelvr(vin,a,t,x,y,z)
-							-*getelvr(vin,a,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
+								getU(lattice,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi)[b+1]*
+								(
+									*getelvr(vin,c,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
+									-
+									*getelvr(vin,c,t,x,y,z)
+								)
+
 							);
-
-
-							//sum in b,c
-							for(b=0;b<3;b++){
-								for(c=0;c<3;c++){
-									if((a!=b) && (b!=c) && (a!=c)){
-										*getelvr(Mvouttemp,a,t,x,y,z) +=
-										aseps(a,b,c)*
-										(
-
-											getU(U,t,x,y,z,mi)[b+1]*
-											(
-												*getelvr(vin,c,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
-												-
-												0//*getelvr(vin,c,t,x,y,z)
-											)
-
-											-
-
-											getU(U,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi)[b+1]*
-											(
-												*getelvr(vin,c,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
-												-
-												0//*getelvr(vin,c,t,x,y,z)
-											)
-
-										);
-									}
-								}
-							}
 						}
 					}
 				}
 			}
 		}
-	}
-
+	}}}}
 	copyvr(Mvout,Mvouttemp,dim);
 	free(Mvouttemp);
 	return( (double)(clock()-dtime)/CLOCKS_PER_SEC );
 }
 
-double rfpapplyOrthogonal(double * Mvout , double * U , double * vin , int dim){
-	//dim should be = N_colors * N^4
-	//the color index = a is fixed
-	//ATTENTION: a is 1,2,3 or 0,1,2?
-	clock_t dtime = clock();
-	int a,b,c,t,x,y,z,mi;
-	int ami[4];
-	double * Mvouttemp = malloc(sizeof(double)*dim);
-
-	setzerovr(Mvouttemp,dim);
-
-	for(t=0;t<Nt;t++){
-		for(x=0;x<N;x++){
-			for(y=0;y<N;y++){
-				for(z=0;z<N;z++){
-					for(a=0;a<3;a++){
-						for(mi=0;mi<4;mi++){
-
-							setzeroqvector(ami);
-							ami[mi]=1;
-
-
-							*getelvr(Mvouttemp,a,t,x,y,z) +=
-
-							getU(U,t,x,y,z,mi)[0]
-							*(
-							*getelvr(vin,a,t,x,y,z)
-							-*getelvr(vin,a,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
-							)
-
-							+
-
-							getU(U,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi)[0]
-							*(
-							*getelvr(vin,a,t,x,y,z)
-							-*getelvr(vin,a,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
-							);
-
-
-							//sum in b,c
-
-							for(b=0;b<3;b++){
-								for(c=0;c<3;c++){
-									if((a!=b) && (b!=c) && (a!=c)){
-										*getelvr(Mvouttemp,a,t,x,y,z) +=
-										aseps(a,b,c)*
-										(
-
-											getU(U,t,x,y,z,mi)[b+1]*
-											(
-												*getelvr(vin,c,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
-												-
-												*getelvr(vin,c,t,x,y,z)
-											)
-
-											-
-
-											getU(U,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi)[b+1]*
-											(
-												*getelvr(vin,c,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
-												-
-												*getelvr(vin,c,t,x,y,z)
-											)
-
-										);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	copyvr(Mvout,Mvouttemp,dim);
-	free(Mvouttemp);
-	return( (double)(clock()-dtime)/CLOCKS_PER_SEC );
-}
-
-double rfpcgmr(double * x , double * lattice , double * b,  int dim, double tol, int * iCG, double * r_CG){
+double rfpcgmr(double * x , LatticeSU2 * lattice , double * b,  int dim, double tol, int * iCG, double * r_CG){
 	//algorithm based on Numerical Recipes book
 	//linear system A . x = b
 	//x and b are complex (dim x 1) column vectors
@@ -233,7 +227,7 @@ double rfpcgmr(double * x , double * lattice , double * b,  int dim, double tol,
 	return((double)(clock()-dtime)/CLOCKS_PER_SEC);
 }
 
-void rgetOrthogonalSpace(double * c, double * b, double * lattice, double cg_tol, int * iCG, double * r_CG){
+void rgetOrthogonalSpace(double * c, double * b, LatticeSU2 * lattice, double cg_tol, int * iCG, double * r_CG){
 	double * a = malloc(sizeof(double)*colorV);
 
 	//getting the null space out of M
@@ -248,7 +242,7 @@ void rgetOrthogonalSpace(double * c, double * b, double * lattice, double cg_tol
 	free(a);
 }
 
-int rsmallest_eigen_cg(double * lattice, double * lambda1, double * eigen_out
+int rsmallest_eigen_cg(LatticeSU2 * lattice, double * lambda1, double * eigen_out
 	 	, double eigen_tol , double * vguess, double * r_cg, int * iCG, double cg_tol){
 	int i;
 	clock_t dtime = clock();
@@ -329,7 +323,7 @@ int rsmallest_eigen_cg(double * lattice, double * lambda1, double * eigen_out
 }
 
 //CG and PM with complex vector
-double fpapply(double complex * Mvout , double * U , double complex * vin , int dim){
+double fpapply(double complex * Mvout , LatticeSU2 * lattice , double complex * vin , int dim){
 	//dim should be = N_colors * N^4
 	//the color index = a is fixed
 	//ATTENTION: a is 1,2,3 or 0,1,2?
@@ -343,62 +337,59 @@ double fpapply(double complex * Mvout , double * U , double complex * vin , int 
 
 	for(a=0;a<3;a++){
 		for(t=0;t<Nt;t++){
-			for(x=0;x<N;x++){
-				for(y=0;y<N;y++){
-					for(z=0;z<N;z++){
-						for(mi=0;mi<4;mi++){
+		for(x=0;x<N;x++){
+		for(y=0;y<N;y++){
+		for(z=0;z<N;z++){
+			for(mi=0;mi<4;mi++){
 
-							setzeroqvector(ami);
-							ami[mi]=1;
+				setzeroqvector(ami);
+				ami[mi]=1;
 
+				*getelvc(Mvouttemp,a,t,x,y,z) +=
+
+				*getelv(getU(lattice,t,x,y,z,mi),0)
+				*(
+				*getelvc(vin,a,t,x,y,z)
+				-*getelvc(vin,a,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
+				)
+
+				+
+
+				*getelv(getU(lattice,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi),0)
+				*(
+				*getelvc(vin,a,t,x,y,z)
+				-*getelvc(vin,a,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
+				);
+
+				//sum in b,c
+				for(b=0;b<3;b++){
+					for(c=0;c<3;c++){
+						if((a!=b) && (b!=c)){
 							*getelvc(Mvouttemp,a,t,x,y,z) +=
+							aseps(a,b,c)*
+							(
 
-							*getelv(getU(U,t,x,y,z,mi),0)
-							*(
-							*getelvc(vin,a,t,x,y,z)
-							-*getelvc(vin,a,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
+							(*getelv(getU(lattice,t,x,y,z,mi),b+1))*
+							(
+								*getelvc(vin,c,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
+								-
+								0//*getelvc(vin,c,t,x,y,z)
 							)
 
-							+
+							-
 
-							*getelv(getU(U,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi),0)
-							*(
-							*getelvc(vin,a,t,x,y,z)
-							-*getelvc(vin,a,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
+							(*getelv(getU(lattice,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi),b+1))*
+							(
+								*getelvc(vin,c,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
+								-
+								0//*getelvc(vin,c,t,x,y,z)
+							)
 							);
-
-							//sum in b,c
-							for(b=0;b<3;b++){
-								for(c=0;c<3;c++){
-									if((a!=b) && (b!=c)){
-										*getelvc(Mvouttemp,a,t,x,y,z) +=
-										aseps(a,b,c)*
-										(
-
-										(*getelv(getU(U,t,x,y,z,mi),b+1))*
-										(
-											*getelvc(vin,c,getStepT(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]))
-											-
-											0//*getelvc(vin,c,t,x,y,z)
-										)
-
-										-
-
-										(*getelv(getU(U,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]),mi),b+1))*
-										(
-											*getelvc(vin,c,getStepT(t,-ami[0]),getStep(x,-ami[1]),getStep(y,-ami[2]),getStep(z,-ami[3]))
-											-
-											0//*getelvc(vin,c,t,x,y,z)
-										)
-										);
-									}
-								}
-							}
 						}
 					}
 				}
 			}
-		}
+		}}}}
 	}
 
 	copyvc(Mvout,Mvouttemp,dim);
@@ -406,7 +397,7 @@ double fpapply(double complex * Mvout , double * U , double complex * vin , int 
 	return( (double)(clock()-dtime)/CLOCKS_PER_SEC );
 }
 
-double fpcgmr(double complex * x , double * lattice , double complex * b,  int dim){
+double fpcgmr(double complex * x , LatticeSU2 * lattice , double complex * b,  int dim){
 	//algorithm based on Numerical Recipes book
 	//linear system A . x = b
 	//x and b are complex (dim x 1) column vectors
@@ -474,7 +465,7 @@ double fpcgmr(double complex * x , double * lattice , double complex * b,  int d
 	return( (double)(clock()-dtime)/CLOCKS_PER_SEC );
 }
 
-void getOrthogonalSpace(double complex * c, double complex * b, double * lattice){
+void getOrthogonalSpace(double complex * c, double complex * b, LatticeSU2 * lattice){
 	double complex * a = malloc(sizeof(double complex)*colorV);
 	//getting the null space out of M
 	fpapply(a , lattice , b , colorV);
@@ -486,7 +477,7 @@ void getOrthogonalSpace(double complex * c, double complex * b, double * lattice
 	free(a);
 }
 
-double complex smallest_eigen_cg(double * lattice, double * lambda1, double complex * eigen_out){
+double complex smallest_eigen_cg(LatticeSU2 * lattice, double * lambda1, double complex * eigen_out){
 	int i;
 	double norm;
 	double eigen_tol = 1e-5;
@@ -534,7 +525,7 @@ double complex smallest_eigen_cg(double * lattice, double * lambda1, double comp
 }
 
 //biCGstab with complex vectors
-void fpbicgstabmr(double complex * x , double * lattice , double complex * b,  int dim, double cg_tol, double * r_cg, int * icg){
+void fpbicgstabmr(double complex * x , LatticeSU2 * lattice , double complex * b,  int dim, double cg_tol, double * r_cg, int * icg){
 	//algorithm based along the lines of Gattringer's book
 	//linear system A . x = b
 	//x and b are complex (dim x 1) column vectors
@@ -634,7 +625,7 @@ void fpbicgstabmr(double complex * x , double * lattice , double complex * b,  i
 	//return( (double)(clock()-dtime)/CLOCKS_PER_SEC );
 }
 
-void bigetOrthogonalSpace(double complex * c, double complex * b, double * lattice, double cg_tol, double * r_cg, int * icg){
+void bigetOrthogonalSpace(double complex * c, double complex * b, LatticeSU2 * lattice, double cg_tol, double * r_cg, int * icg){
 	double complex * a = malloc(sizeof(double complex)*colorV);
 	//getting the null space out of M
 	fpapply(a , lattice , b , colorV);
@@ -646,7 +637,7 @@ void bigetOrthogonalSpace(double complex * c, double complex * b, double * latti
 	free(a);
 }
 
-double smallest_eigen_bicgstab(double * lattice, double * lambda1, double * eigen_out, double eigen_tol, double * r_cg, int * icg, double cg_tol){
+double smallest_eigen_bicgstab(LatticeSU2 * lattice, double * lambda1, double * eigen_out, double eigen_tol, double * r_cg, int * icg, double cg_tol){
 	int i,t,x,y,z,a;
 	clock_t dtime = clock();
 	double norm;
@@ -734,13 +725,13 @@ double smallest_eigen_bicgstab(double * lattice, double * lambda1, double * eige
 }
 
 //R functional computation
-double  FsecondDerivative(double * lattice, double complex * eigen_vector_out){
+double  FsecondDerivative(LatticeSU2 * lattice, double complex * eigen_vector_out){
 	double lambda;
 	smallest_eigen_cg(lattice,&lambda,eigen_vector_out);
 	return lambda/(4e0*totalV);
 }
 
-double rFThirdFourthDerivative(double * lattice, double * ev_in, double * third, double * fourth){
+double rFThirdFourthDerivative(LatticeSU2 * lattice, double * ev_in, double * third, double * fourth){
 	clock_t dtime = clock();
 	int t,y,x,z,a,b,c,d,e;
 	double aux1,aux2;
@@ -830,7 +821,7 @@ double rFThirdFourthDerivative(double * lattice, double * ev_in, double * third,
 }
 
 //OTHER STUFF
-double complex largest_eigen_cg(double * lattice, double * lambda1, double complex * eigen_out){
+double complex largest_eigen_cg(LatticeSU2 * lattice, double * lambda1, double complex * eigen_out){
 	int i;
 	double eigen_tol = 1e-8;
 	double complex eigen_v = 0e0 + I*0e0;
@@ -882,7 +873,7 @@ double complex largest_eigen_cg(double * lattice, double * lambda1, double compl
 	return( (double)(clock()-dtime)/CLOCKS_PER_SEC );
 }
 
-void divergentConfigProcedure(double * escaled_lattice, double new_delta_scale, double * tau, int * divergenConfigN, double r_CG, int iCG
+void divergentConfigProcedure(LatticeSU2 * escaled_lattice, double new_delta_scale, double * tau, int * divergenConfigN, double r_CG, int iCG
 																			,double * lambda1, double * ev_guess, double eigen_tol, double cg_tol){
 	//in case of patological configuration
 	double pmin[4] = {0,0,0,1.0/N};
@@ -921,7 +912,7 @@ void divergentConfigProcedure(double * escaled_lattice, double new_delta_scale, 
 	}
 }
 
-double horizonWalk(double * target_lattice, double * nHorizonOut, double * rhoHorizonOut, double * ev_guess
+double horizonWalk(LatticeSU2 * target_lattice, double * nHorizonOut, double * rhoHorizonOut, double * ev_guess
 		, double * lambda1Out, double * rAfterOut, double * rBeforeOut, double * thirdOut, double * thirdAbsOut, double * fourthOut
 		, double * rOut, double * pwProjOut, double eigen_tol, int * divergentConfig, double cg_tol){
 
@@ -942,7 +933,11 @@ double horizonWalk(double * target_lattice, double * nHorizonOut, double * rhoHo
 	printf("\n Initial: %e %e %e %e\n",*lambda1Out,*thirdOut,*fourthOut,*rOut);	fflush(stdout);
 
 	printf("Initial data save. Starting walk...\n");
-	double * escaled_lattice = malloc(sizeof(double)*dimLattice);
+
+	// double * escaled_lattice = malloc(sizeof(double)*dimLattice);
+	LatticeSU2 * escaled_lattice;
+	defineLatticeSU2(escaled_lattice , target_lattice->N , target_lattice->Nt);
+
 	double lambda1, third, fourth, r;
 	*nHorizonOut = 0;
 	do{
@@ -975,11 +970,11 @@ double horizonWalk(double * target_lattice, double * nHorizonOut, double * rhoHo
 	*rhoHorizonOut = 1e0/((1e0/delta_scale + 1e0)*tau/2e0);
 	printf(" -- rho = %lf",*rhoHorizonOut);
 
-	free(escaled_lattice);
+	free(escaled_lattice->U);
 	return(r_CG);
 }
 
-double verifyOrthogonalization(double * lattice, double * vin){
+double verifyOrthogonalization(LatticeSU2 * lattice, double * vin){
 	double * aux 		= malloc(sizeof(double)*N*N*N*N*3);
 	rfpapply(aux, lattice, vin, colorV);
 

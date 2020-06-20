@@ -4,19 +4,18 @@
 #include <string.h>
 
 #include "utilities.h"
-#include "global.h"
 #include "algebra.h"
+#include "global.h"
 
 ////////////////////////////// ran0 implementation from numerical recipes
-static const int IA = 16807;
-static const long IM = 2147483647;
-static const double AM = (1.0/IM);
-static const int IQ = 127773;
-static const int IR = 2836;
-static const long MASK = 123459876;
-
 float ran0(long *idum)
 {	
+	static const int IA = 16807;
+	static const long IM = 2147483647;
+	static const double AM = (1.0/IM);
+	static const int IQ = 127773;
+	static const int IR = 2836;
+	static const long MASK = 123459876;
 	long k;
 	float ans;
 	*idum ^= MASK;
@@ -94,30 +93,26 @@ void fprintm(FILE * file , double * A){
 	fprintf(file, "\n");
 }
 
-double * getU(double * lattice, int t , int x , int y, int z , int mi){
-	return ( lattice + t*spatialV*16 + x*N2*16 + y*N*16 + z*16 + mi*4);
+double * getU(LatticeSU2 * lattice, int t , int x , int y, int z , int mi){
+	return ( lattice->U + t*lattice->spatialV*16 + x*lattice->N2*16 + y*lattice->N*16 + z*16 + mi*4);
 }
 
-double * getUdim(double * lattice, int t , int x , int y, int z , int mi, int N){
-	return ( lattice + t*spatialV*16 + x*N2*16 + y*N*16 + z*16 + mi*4);
+double * getUdim(LatticeSU2 * lattice, int t , int x , int y, int z , int mi, int N){
+	return ( lattice->U + t*lattice->spatialV*16 + x*lattice->N2*16 + y*lattice->N*16 + z*16 + mi*4);
 }
 
-void printLattice(double * lattice){
+void printLattice(LatticeSU2 * lattice){
 	int t,x,y,z,mi;
 	printf("------------------");
-
-	for(t=0 ; t<Nt ; t++){
-		for(x=0 ; x<N ; x++){
-			for(y=0 ; y<N ; y++){
-				for(z=0 ; z<N ; z++){
-					for(mi=0 ; mi<4; mi++){
-						printf("\n");
-						printm( getU(lattice,t,x,y,z,mi) );
-					}
-				}
-			}
+	for(t=0 ; t<lattice->Nt ; t++){
+	for(x=0 ; x<lattice->N ; x++){
+	for(y=0 ; y<lattice->N ; y++){
+	for(z=0 ; z<lattice->N ; z++){
+		for(mi=0 ; mi<4; mi++){
+			printf("\n");
+			printm( getU(lattice,t,x,y,z,mi) );
 		}
-	}
+	}}}}
 	printf("------------------");
 }
 
@@ -129,7 +124,7 @@ void copyv(double * out , double * in){
 	}
 }
 
-double * randSU2v(double * vector ,long * seed , double parameter){
+void randSU2v(double * vector ,long * seed , double parameter){
 	int j;
 	float eps = parameter-0.01;				//displacement from identity
 	double r[3] , x[4];
@@ -269,48 +264,42 @@ void setquadv(int * amu, int mu){
 	}
 }
 
-void initl(double * lattice , float parameter){
+void initl(LatticeSU2 * lattice , float parameter){
 	int t,x,y,z,mi,a,b;
-	for(t=0 ; t<Nt ; t++){
-		for(x=0 ; x<N ; x++){
-			for(y=0 ; y<N ; y++){
-				for(z=0 ; z<N ; z++){
-					for(mi=0 ; mi<4; mi++){
-						if(parameter == 0){
-							setidv( getU(lattice, t,x,y,z,mi) );
-						}
-						else{
-							randSU2v(getU(lattice, t,x,y,z,mi) , global_seed , parameter);
-						}
-					}
-				}
+	for(t=0 ; t<lattice->Nt ; t++){
+	for(x=0 ; x<lattice->N ; x++){
+	for(y=0 ; y<lattice->N ; y++){
+	for(z=0 ; z<lattice->N ; z++){
+		for(mi=0 ; mi<4; mi++){
+			if(parameter == 0){
+				setidv( getU(lattice, t,x,y,z,mi) );
+			}
+			else{
+				randSU2v(getU(lattice, t,x,y,z,mi) , global_seed , parameter);
 			}
 		}
-	}
+	}}}}
 }
 
-void reunitl(double * lattice){
+void reunitl(LatticeSU2 * lattice){
 	int t,x,y,z,mi,i;
 	double * aux_link;
 	double norm;
-	for(t=0 ; t<Nt ; t++){
-		for(x=0 ; x<N ; x++){
-			for(y=0 ; y<N ; y++){
-				for(z=0 ; z<N ; z++){
-					for(mi=0 ; mi<4; mi++){
-						aux_link = getU(lattice, t,x,y,z,mi);
-						norm = sqrt(detv(aux_link));
-						//printc(detv(aux_link));
-						for(i=0;i<4;i++){
-							*getelv(aux_link , i) /= norm;
-						}
-						//printr(detv(aux_link));
-						//printf("\n");
-					}
-				}
+	for(t=0 ; t<lattice->Nt ; t++){
+	for(x=0 ; x<lattice->N ; x++){
+	for(y=0 ; y<lattice->N ; y++){
+	for(z=0 ; z<lattice->N ; z++){
+		for(mi=0 ; mi<4; mi++){
+			aux_link = getU(lattice, t,x,y,z,mi);
+			norm = sqrt(detv(aux_link));
+			//printc(detv(aux_link));
+			for(i=0;i<4;i++){
+				*getelv(aux_link , i) /= norm;
 			}
+			//printr(detv(aux_link));
+			//printf("\n");
 		}
-	}
+	}}}}
 }
 
 void reunitv(double * vector){
@@ -343,19 +332,16 @@ double getStepT( double coord , double dcoord ){
 	return aux;
 }
 
-void copyl(double * Lout , double * Lin){
+void copyl(LatticeSU2 * Lout , LatticeSU2 * Lin){
 	int t,x,y,z,mi,a,b;
-	for(t=0 ; t<Nt ; t++){
-		for(x=0 ; x<N ; x++){
-			for(y=0 ; y<N ; y++){
-				for(z=0 ; z<N ; z++){
-					for(mi=0 ; mi<4; mi++){
-						copyv( getU(Lout, t,x,y,z,mi) , getU(Lin,t,x,y,z,mi) );
-					}
-				}
-			}
+	for(t=0 ; t<Lout->Nt ; t++){
+	for(x=0 ; x<Lout->N ; x++){
+	for(y=0 ; y<Lout->N ; y++){
+	for(z=0 ; z<Lout->N ; z++){
+		for(mi=0 ; mi<4; mi++){
+			copyv( getU(Lout, t,x,y,z,mi) , getU(Lin,t,x,y,z,mi) );
 		}
-	}
+	}}}}
 }
 
 double * getg(double * g, int t , int x , int y, int z){
@@ -366,16 +352,13 @@ void printvcbycolor(double complex * v, int a){
 	int t,x,y,z;
 	for(a=0;a<3;a++){
 		for(t=0;t<Nt;t++){
-			for(x=0;x<N;x++){
-				for(y=0;y<N;y++){
-					for(z=0;z<N;z++){
-						printf("%d %d %d %d %d",a,t,x,y,z);
-						printc(*getelvc(v,a,t,x,y,z));
-						printf("\n");
-					}
-				}
-			}
-		}
+		for(x=0;x<N;x++){
+		for(y=0;y<N;y++){
+		for(z=0;z<N;z++){
+			printf("%d %d %d %d %d",a,t,x,y,z);
+			printc(*getelvc(v,a,t,x,y,z));
+			printf("\n");
+		}}}}
 	}
 }
 
@@ -390,11 +373,11 @@ void progress_panel(int i, int total){
 		fflush(stdout);
 	}
 
-void save_lattice(double * lattice, char * file_name){
+void save_lattice(LatticeSU2 * lattice, char * file_name){
 	//always use double quotes to pass file_name
 	FILE * fl;
 	fl = fopen( file_name , "wb");
-	if( fwrite(lattice, sizeof(double) , dimLattice , fl) ) {
+	if( fwrite(lattice->U, sizeof(double) , lattice->dimLattice , fl) ) {
 		printf("\n Lattice saved");
 	}
 	else{
@@ -448,10 +431,10 @@ void getName(char * out, char * header , double num){
 
 }
 
-void load_lattice(double * lattice , char * file_name){
+void load_lattice(LatticeSU2 * lattice , char * file_name){
 	FILE * fl;
 	fl = fopen( file_name, "rb" );
-	if( fread( lattice, sizeof(double) , dimLattice , fl) ){
+	if( fread( lattice->U, sizeof(double) , lattice->dimLattice , fl) ){
 		printf("\n Lattice loaded");
 	}
 	else{
@@ -486,23 +469,20 @@ int compareLink(double * link1, double * link2){
 	return 1;
 }
 
-int compareLattice(double * lattice1, double * lattice2){
+int compareLattice(LatticeSU2 * lattice1, LatticeSU2 * lattice2){
 	int t,x,y,z,mi,a,b;
 	double complex * aux = malloc(sizeof(double complex)*4);
-	for(t=0 ; t<Nt ; t++){
-		for(x=0 ; x<N ; x++){
-			for(y=0 ; y<N ; y++){
-				for(z=0 ; z<N ; z++){
-					for(mi=0 ; mi<4; mi++){
-						if( !compareLink( getU(lattice1, t,x,y,z,mi) , getU(lattice2,t,x,y,z,mi) )  ){
-							printf("\n ----> Different lattices!");
-							return 0;
-						}
-					}
+		for(t=0 ; t<lattice1->Nt ; t++){
+		for(x=0 ; x<lattice1->N ; x++){
+		for(y=0 ; y<lattice1->N ; y++){
+		for(z=0 ; z<lattice1->N ; z++){
+			for(mi=0 ; mi<4; mi++){
+				if( !compareLink( getU(lattice1, t,x,y,z,mi) , getU(lattice2,t,x,y,z,mi) )  ){
+					printf("\n ----> Different lattices!");
+					return 0;
 				}
 			}
-		}
-	}
+		}}}}
 	printf("\n ----> Same lattices!");
 	return 1;
 }
@@ -524,7 +504,7 @@ int comparevr(double * v1, double * v2, int dim){
 	int i;
 	double tol = 1e-13;
 	for(i=0;i<dim;i++){
-		if( cabs(v1[i] - v2[i]) > tol){
+		if( fabs(v1[i] - v2[i]) > tol){
 			printf("\n ----> Different vectors! <----");
 			return(0);
 		}
@@ -533,38 +513,30 @@ int comparevr(double * v1, double * v2, int dim){
 	return(1);
 }
 
-void reescaleGaugeField(double * out, double * in, double scale){
+void reescaleGaugeField(LatticeSU2 * out, LatticeSU2 * in, double scale){
 	int t,x,y,z,mi,a;
-	for(t=0 ; t<Nt ; t++){
-		for(x=0 ; x<N ; x++){
-			for(y=0 ; y<N ; y++){
-				for(z=0 ; z<N ; z++){
-					for(mi=0 ; mi<4 ; mi++){
-						getU(out,t,x,y,z,mi)[0] = getU(in,t,x,y,z,mi)[0];
-						for(a=1;a<4;a++)
-							getU(out,t,x,y,z,mi)[a] = getU(in,t,x,y,z,mi)[a]*scale;
-					}
-				}
-			}
+	for(t=0 ; t<out->Nt ; t++){
+	for(x=0 ; x<out->N ; x++){
+	for(y=0 ; y<out->N ; y++){
+	for(z=0 ; z<out->N ; z++){
+		for(mi=0 ; mi<4 ; mi++){
+			getU(out,t,x,y,z,mi)[0] = getU(in,t,x,y,z,mi)[0];
+			for(a=1;a<4;a++)
+				getU(out,t,x,y,z,mi)[a] = getU(in,t,x,y,z,mi)[a]*scale;
 		}
-	}
-
+	}}}}
 }
 
-void reescaleLinks(double * out, double * in, double scale){
+void reescaleLinks(LatticeSU2 * out , LatticeSU2 * in, double scale){
 	int t,x,y,z,mi,a;
-	for(t=0 ; t<Nt ; t++){
-		for(x=0 ; x<N ; x++){
-			for(y=0 ; y<N ; y++){
-				for(z=0 ; z<N ; z++){
-					for(mi=0 ; mi<4 ; mi++){
-						getU(out,t,x,y,z,mi)[0] = getU(in,t,x,y,z,mi)[0]*scale;
-					}
-				}
-			}
+	for(t=0 ; t<out->Nt ; t++){
+	for(x=0 ; x<out->N ; x++){
+	for(y=0 ; y<out->N ; y++){
+	for(z=0 ; z<out->N ; z++){
+		for(mi=0 ; mi<4 ; mi++){
+			getU(out,t,x,y,z,mi)[0] = getU(in,t,x,y,z,mi)[0]*scale;
 		}
-	}
-
+	}}}}
 }
 
 double compareVectorToPW(double * eigenvector, double pPW){
@@ -578,14 +550,11 @@ double compareVectorToPW(double * eigenvector, double pPW){
 			for(mu=0;mu<4;mu++){
 				fouriersum=0;
 				for(x[0]=0;x[0]<Nt;x[0]++){
-					for(x[1]=0;x[1]<N;x[1]++){
-						for(x[2]=0;x[2]<N;x[2]++){
-							for(x[3]=0;x[3]<N;x[3]++){
+				for(x[1]=0;x[1]<N;x[1]++){
+				for(x[2]=0;x[2]<N;x[2]++){
+				for(x[3]=0;x[3]<N;x[3]++){
 								fouriersum += *getelvr(eigenvector,b,x[0],x[1],x[2],x[3])*cexp(pPW2ipi*x[mu]) ;
-							}
-						}
-					}
-				}
+				}}}}
 				totalsum += pow( cabs(fouriersum),2 );
 			}
 		}
@@ -593,6 +562,7 @@ double compareVectorToPW(double * eigenvector, double pPW){
 		return(totalsum/(3.0*4.0*totalV));
 }
 
+/*
 double zeroMomentumTransform(double * vector){
 	double fouriersum = 0e0;
 	int x[4];
@@ -601,37 +571,30 @@ double zeroMomentumTransform(double * vector){
 	for(b=0;b<3;b++){
 		fouriersum=0e0;
 		for(x[0]=0;x[0]<Nt;x[0]++){
-			for(x[1]=0;x[1]<N;x[1]++){
-				for(x[2]=0;x[2]<N;x[2]++){
-					for(x[3]=0;x[3]<N;x[3]++){
+		for(x[1]=0;x[1]<N;x[1]++){
+		for(x[2]=0;x[2]<N;x[2]++){
+		for(x[3]=0;x[3]<N;x[3]++){
 						fouriersum += *getelvr(vector,b,x[0],x[1],x[2],x[3]);
-					}
-				}
-			}
-		}
+		}}}}
 	}
-
 	return(fouriersum/(3e0*totalV));
-}
+}*/
 
-int isLatticeUnitary(double * lattice){
+int isLatticeUnitary(LatticeSU2 * lattice){
 	int t,x,y,z,mi,i;
 	double * aux_link;
 	double norm;
-	for(t=0 ; t<Nt ; t++){
-		for(x=0 ; x<N ; x++){
-			for(y=0 ; y<N ; y++){
-				for(z=0 ; z<N ; z++){
-					for(mi=0 ; mi<4; mi++){
-						if( !(fabs(detv(getU(lattice,t,x,y,z,mi))-1e0) < 1e-4) ){
-							printf("\n Lattice is not unitarized.");
-							return(0);
-						}
-					}
-				}
+	for(t=0 ; t<lattice->Nt ; t++){
+	for(x=0 ; x<lattice->N ; x++){
+	for(y=0 ; y<lattice->N ; y++){
+	for(z=0 ; z<lattice->N ; z++){
+		for(mi=0 ; mi<4; mi++){
+			if( !(fabs(detv(getU(lattice,t,x,y,z,mi))-1e0) < 1e-4) ){
+				printf("\n Lattice is not unitarized.");
+				return(0);
 			}
 		}
-	}
+	}}}}
 	printf("\n Lattice is unitarized.");
 	return(1);
 }
@@ -645,10 +608,10 @@ int isLinkUnitary(double * link){
 	return(0);
 }
 
-int isLatticeNaN(double * lattice){
+int isLatticeNaN(LatticeSU2 * lattice){
 	int i;
-	for(i=0;i<dimLattice;i++){
-		if( isnan(lattice[dimLattice]) ){
+	for(i=0;i<lattice->dimLattice;i++){
+		if( isnan(lattice->U[dimLattice]) ){
 			//printf("\n WARNING! LATTICE IS NAN!\n");
 			return(1);
 		}
@@ -682,4 +645,15 @@ double sortDouble(double i , double j){
 
 void printpos(double t, double x, double y , double z, double mi){
 	printf("\n %lf | %lf | %lf | %lf | %lf \n",t,x,y,z,mi);
+}
+
+void defineLatticeSU2(LatticeSU2 * lattice , int _N , int _Nt){
+    lattice->N = _N;
+    lattice->Nt = _Nt;
+    lattice->totalV = _N*_N*_N*_Nt;
+    lattice->spatialV = _N*_N*_N;
+    lattice->dimLattice = totalV*4*4;
+    lattice->colorV = 3*totalV;
+    lattice->N2 = _N*_N;
+    lattice->U = malloc(sizeof(double)*lattice->dimLattice);
 }

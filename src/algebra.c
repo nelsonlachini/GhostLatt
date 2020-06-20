@@ -1,5 +1,6 @@
+
 #include "algebra.h"
-#include "global.h"
+#include "utilities.h"
 
 
 int getSignal(double number){

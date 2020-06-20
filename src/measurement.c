@@ -1,9 +1,10 @@
 #include "measurement.h"
-#include "global.h"
+#include "utilities.h"
+#include "algebra.h"
 
 #include "inverters.h"
 
-double wilsonLoopMeasureSym(double * lattice , int X, int Y){
+double wilsonLoopMeasureSym(LatticeSU2 * lattice , int X, int Y){
     double sum = 0;
     int temp;
     int k,j,mi,ni,t,x,y,z;
@@ -111,7 +112,7 @@ double wilsonLoopMeasureSym(double * lattice , int X, int Y){
 	return sum/(2*6.0*totalV);
 }
 
-double wilsonLoopMeasureAsym(double * lattice , int R, int T){
+double wilsonLoopMeasureAsym(LatticeSU2 * lattice , int R, int T){
     double sum = 0;
     int temp;
     int k,j,mi,ni,t,x,y,z;
@@ -169,7 +170,7 @@ double wilsonLoopMeasureAsym(double * lattice , int R, int T){
 	return sum/(2*3.0*totalV);
 }
 
-double polyakovLoopMeasure(double * lattice){
+double polyakovLoopMeasure(LatticeSU2 * lattice){
     double sum = 0;
     int temp;
     int k,t,x,y,z;
@@ -192,7 +193,7 @@ double polyakovLoopMeasure(double * lattice){
     return sum/(2.0*spatialV);
 }
 
-double measure_ghostp(double * lattice, double *** G, double * kz, int kSize, int j_Ncf){
+double measure_ghostp(LatticeSU2 * lattice, double *** G, double * kz, int kSize, int j_Ncf){
     clock_t dtime = clock();
     int i;
     double complex * chute 		= malloc(sizeof(double complex)*colorV);
@@ -220,7 +221,7 @@ double measure_ghostp(double * lattice, double *** G, double * kz, int kSize, in
     return(((double)(clock() - dtime))/(CLOCKS_PER_SEC));
 }
 
-double gluonP(double * lattice, double kz){
+double gluonP(LatticeSU2 * lattice, double kz){
         int t,x,y,z,a,mi;
         double D = 0e0;
 
@@ -267,7 +268,7 @@ double gluonP(double * lattice, double kz){
         }
 }
 
-double measure_gluonp(double * lattice, double *** D, double * kz, int kSize, int j_Ncf){
+double measure_gluonp(LatticeSU2 * lattice, double *** D, double * kz, int kSize, int j_Ncf){
     //to pass a pointer to a pointer in C I must declare it as a pointer to a pointer to pointer
     
     clock_t dtime = clock();
@@ -280,7 +281,7 @@ double measure_gluonp(double * lattice, double *** D, double * kz, int kSize, in
     return(((double)(clock() - dtime))/(CLOCKS_PER_SEC));
 }
 
-double updateStapleMeasurement(double * lattice , int t, int x, int y, int z, int mi , double * _staple){
+void updateStapleMeasurement(LatticeSU2 * lattice , int t, int x, int y, int z, int mi , double * _staple){
     int i,ni;
     int ani[4], ami[4];
     double * auxp = malloc((sizeof(double))*4);
@@ -320,7 +321,7 @@ double updateStapleMeasurement(double * lattice , int t, int x, int y, int z, in
     free(aux3);
 }
 
-void spatialSmearStep(double * outlattice, double * inlattice, double alpha_smear){
+void spatialSmearStep(LatticeSU2 * outlattice, LatticeSU2 * inlattice, double alpha_smear){
     int t,x,y,z,i,ai[4],j,aj[4];
     double * aux = malloc(sizeof(double)*4);
     double * herm = malloc(sizeof(double)*4);
@@ -346,13 +347,15 @@ void spatialSmearStep(double * outlattice, double * inlattice, double alpha_smea
     free(aux);
 }
 
-void spatialSmearing3(double * outlattice, double * inlattice, int n_smear, double alpha_smear){
+void spatialSmearing3(LatticeSU2 * outlattice, LatticeSU2 * inlattice, int n_smear, double alpha_smear){
     int i;
     copyl(outlattice,inlattice);
-    double * templattice = malloc(sizeof(double)*dimLattice);
+    LatticeSU2 * templattice;
+    defineLatticeSU2(templattice,inlattice->N,inlattice->Nt);
+
     for(i=0;i<n_smear;i++){
         copyl(templattice,outlattice);
         spatialSmearStep(outlattice,templattice,alpha_smear);
     }
-    free(templattice);
+    free(templattice->U);
 }

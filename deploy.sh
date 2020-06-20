@@ -4,4 +4,3 @@ source bootstrap.sh
 mkdir build
 cd build
 ../configure
-make
