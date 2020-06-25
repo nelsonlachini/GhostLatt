@@ -11,98 +11,92 @@ double wilsonLoopMeasureSym(LatticeSU2 * lattice , int X, int Y){
     int ani[4],ami[4];
     double * auxc = malloc(sizeof(double)*4);
     double * aux = malloc(sizeof(double)*4);
-    for(t=0 ; t<Nt ; t++){
-        for(x=0 ; x<N ; x++){
-            for(y=0 ; y<N ;y++){
-                for(z=0 ; z<N ; z++){
-                    for(ni=0 ; ni<3 ; ni++){
-                        setquadv(&ani[0],ni);
-                        for(mi=ni+1 ; mi<4 ; mi++){
-                            setquadv(&ami[0],mi);
-                            k=0;
-                            j=0;
-                            setidv(aux);
+	for(t=0 ; t<lattice->Nt ; t++){
+	for(x=0 ; x<lattice->N ; x++){
+	for(y=0 ; y<lattice->N ; y++){
+	for(z=0 ; z<lattice->N ; z++){
+        for(ni=0 ; ni<3 ; ni++){
+            setquadv(&ani[0],ni);
+            for(mi=ni+1 ; mi<4 ; mi++){
+                setquadv(&ami[0],mi);
+                k=0;
+                j=0;
+                setidv(aux);
 
-                            for(k=0 ; k<X ; k++){
-								mmprodv(aux, aux, getU(lattice, (t+k*ami[0])%Nt , (x+k*ami[1])%N , (y+k*ami[2])%N , (z+k*ami[3])%N ,mi) );
-							}
-							k--;
-
-                            for(j=0 ; j<Y ; j++){
-								mmprodv(aux , aux , getU(lattice, (t+(k+1)*ami[0] + j*ani[0])%Nt , (x+(k+1)*ami[1]+ j*ani[1])%N ,
-										(y+(k+1)*ami[2]+ j*ani[2])%N , (z+(k+1)*ami[3]+ j*ani[3])%N , ni) );
-							}
-							j--;
-
-                            for( ; k > -1 ; k--){
-								hermcv( auxc , getU(lattice, (t+k*ami[0] + (j+1)*ani[0])%Nt , (x+k*ami[1]+ (j+1)*ani[1])%N ,
-									(y+k*ami[2]+ (j+1)*ani[2])%N , (z+k*ami[3]+ (j+1)*ani[3])%N , mi ) );
-								mmprodv(aux, aux , auxc);
-							}
-							k++;
-
-							for( ; j > -1 ; j--){
-								hermcv( auxc , getU(lattice, (t+ j*ani[0])%Nt , (x+ j*ani[1])%N ,
-									(y+ j*ani[2])%N , (z+ j*ani[3])%N , ni ) );
-								mmprodv(aux , aux , auxc);
-							}
-
-                            sum += tracev(aux);
-                        }
-                    }
+                for(k=0 ; k<X ; k++){
+                    mmprodv(aux, aux, getU(lattice, (t+k*ami[0])%Nt , (x+k*ami[1])%N , (y+k*ami[2])%N , (z+k*ami[3])%N ,mi) );
                 }
+                k--;
+
+                for(j=0 ; j<Y ; j++){
+                    mmprodv(aux , aux , getU(lattice, (t+(k+1)*ami[0] + j*ani[0])%Nt , (x+(k+1)*ami[1]+ j*ani[1])%N ,
+                            (y+(k+1)*ami[2]+ j*ani[2])%N , (z+(k+1)*ami[3]+ j*ani[3])%N , ni) );
+                }
+                j--;
+
+                for( ; k > -1 ; k--){
+                    hermcv( auxc , getU(lattice, (t+k*ami[0] + (j+1)*ani[0])%Nt , (x+k*ami[1]+ (j+1)*ani[1])%N ,
+                        (y+k*ami[2]+ (j+1)*ani[2])%N , (z+k*ami[3]+ (j+1)*ani[3])%N , mi ) );
+                    mmprodv(aux, aux , auxc);
+                }
+                k++;
+
+                for( ; j > -1 ; j--){
+                    hermcv( auxc , getU(lattice, (t+ j*ani[0])%Nt , (x+ j*ani[1])%N ,
+                        (y+ j*ani[2])%N , (z+ j*ani[3])%N , ni ) );
+                    mmprodv(aux , aux , auxc);
+                }
+
+                sum += tracev(aux);
             }
         }
-    }
+    }}}}
     if(X != Y){
 		temp = X;
 		X = Y;
 		Y = temp;
-		for(t=0 ; t<Nt ; t++){
-			for(x=0 ; x<N ; x++){
-				for(y=0 ; y<N ;y++){
-					for(z=0 ; z<N ; z++){
-						for(ni=0 ; ni<3 ; ni++){
-							for(k=0 ; k<4 ; k++) ani[k] = 0;
-							ani[ni] = 1;
-							for(mi=ni+1 ; mi<4 ; mi++){
-                                setquadv(&ami[0],mi);
-								k=0;
-								j=0;
-								setidv( aux );
+        for(t=0 ; t<lattice->Nt ; t++){
+        for(x=0 ; x<lattice->N ; x++){
+        for(y=0 ; y<lattice->N ; y++){
+        for(z=0 ; z<lattice->N ; z++){
+            for(ni=0 ; ni<3 ; ni++){
+                for(k=0 ; k<4 ; k++) ani[k] = 0;
+                ani[ni] = 1;
+                for(mi=ni+1 ; mi<4 ; mi++){
+                    setquadv(&ami[0],mi);
+                    k=0;
+                    j=0;
+                    setidv( aux );
 
-								for(k=0 ; k<X ; k++){
-									mmprodv(aux , aux ,
-										getU(lattice, (t+k*ami[0])%Nt , (x+k*ami[1])%N , (y+k*ami[2])%N , (z+k*ami[3])%N ,mi) );
-								}
+                    for(k=0 ; k<X ; k++){
+                        mmprodv(aux , aux ,
+                            getU(lattice, (t+k*ami[0])%Nt , (x+k*ami[1])%N , (y+k*ami[2])%N , (z+k*ami[3])%N ,mi) );
+                    }
 
-								k--;
-								for(j=0 ; j<Y ; j++){
-									mmprodv(aux , aux , getU(lattice, (t+(k+1)*ami[0] + j*ani[0])%Nt , (x+(k+1)*ami[1]+ j*ani[1])%N ,
-											(y+(k+1)*ami[2]+ j*ani[2])%N , (z+(k+1)*ami[3]+ j*ani[3])%N , ni) );
-								}
+                    k--;
+                    for(j=0 ; j<Y ; j++){
+                        mmprodv(aux , aux , getU(lattice, (t+(k+1)*ami[0] + j*ani[0])%Nt , (x+(k+1)*ami[1]+ j*ani[1])%N ,
+                                (y+(k+1)*ami[2]+ j*ani[2])%N , (z+(k+1)*ami[3]+ j*ani[3])%N , ni) );
+                    }
 
-								j--;
-								for( ; k > -1 ; k--){
-									hermcv( auxc , getU(lattice, (t+k*ami[0] + (j+1)*ani[0])%Nt , (x+k*ami[1]+ (j+1)*ani[1])%N ,
-										(y+k*ami[2]+ (j+1)*ani[2])%N , (z+k*ami[3]+ (j+1)*ani[3])%N , mi ) );
-									mmprodv(aux, aux , auxc);
-								}
+                    j--;
+                    for( ; k > -1 ; k--){
+                        hermcv( auxc , getU(lattice, (t+k*ami[0] + (j+1)*ani[0])%Nt , (x+k*ami[1]+ (j+1)*ani[1])%N ,
+                            (y+k*ami[2]+ (j+1)*ani[2])%N , (z+k*ami[3]+ (j+1)*ani[3])%N , mi ) );
+                        mmprodv(aux, aux , auxc);
+                    }
 
-								k++;
-								for( ; j > -1 ; j--){
-									hermcv( auxc , getU(lattice, (t+ j*ani[0])%Nt , (x+ j*ani[1])%N ,
-										(y+ j*ani[2])%N , (z+ j*ani[3])%N , ni ) );
-									mmprodv(aux , aux , auxc);
-								}
+                    k++;
+                    for( ; j > -1 ; j--){
+                        hermcv( auxc , getU(lattice, (t+ j*ani[0])%Nt , (x+ j*ani[1])%N ,
+                            (y+ j*ani[2])%N , (z+ j*ani[3])%N , ni ) );
+                        mmprodv(aux , aux , auxc);
+                    }
 
-								sum += tracev(aux);
-							}
-						}
-					}
-				}
-			}
-		}
+                    sum += tracev(aux);
+                }
+            }
+        }}}}
 		free(aux);
 		free(auxc);
 		return sum/(2*12.0*totalV);
@@ -123,48 +117,44 @@ double wilsonLoopMeasureAsym(LatticeSU2 * lattice , int R, int T){
     mi=0;                       //T direction
     setquadv(&ami[0],mi);
 
-    for(t=0 ; t<Nt ; t++){
-        for(x=0 ; x<N ; x++){
-            for(y=0 ; y<N ;y++){
-                for(z=0 ; z<N ; z++){
-                    for(ni=1 ; ni<4 ; ni++){
-                        setquadv(&ani[0],ni);
-                        //for(mi=ni+1 ; mi<4 ; mi++){
-                            k=0;
-                            j=0;
-                            setidv(aux);
+    for(t=0 ; t<lattice->Nt ; t++){
+	for(x=0 ; x<lattice->N ; x++){
+	for(y=0 ; y<lattice->N ; y++){
+	for(z=0 ; z<lattice->N ; z++){
+        for(ni=1 ; ni<4 ; ni++){
+            setquadv(&ani[0],ni);
+            //for(mi=ni+1 ; mi<4 ; mi++){
+                k=0;
+                j=0;
+                setidv(aux);
 
-                            for(k=0 ; k<T ; k++){
-								mmprodv(aux, aux, getU(lattice, (t+k)%Nt , x , y , z ,mi) );
-							}
-							k--;
-
-                            for(j=0 ; j<R ; j++){
-								mmprodv(aux , aux , getU(lattice, (t+(k+1)*ami[0])%Nt , (x+(k+1)*ami[1]+ j*ani[1])%N ,
-										(y+(k+1)*ami[2]+ j*ani[2])%N , (z+(k+1)*ami[3]+ j*ani[3])%N , ni) );
-							}
-							j--;
-
-                            for( ; k > -1 ; k--){
-								hermcv( auxc , getU(lattice, (t+k+ (j+1)*ani[0])%Nt , (x+ (j+1)*ani[1])%N ,
-									(y+ (j+1)*ani[2])%N , (z+ (j+1)*ani[3])%N , mi ) );
-								mmprodv(aux, aux , auxc);
-							}
-							k++;
-
-							for( ; j > -1 ; j--){
-								hermcv( auxc , getU(lattice, t , (x+ j*ani[1])%N ,
-									(y+ j*ani[2])%N , (z+ j*ani[3])%N , ni ) );
-								mmprodv(aux , aux , auxc);
-							}
-
-                            sum += tracev(aux);
-                        //}
-                    }
+                for(k=0 ; k<T ; k++){
+                    mmprodv(aux, aux, getU(lattice, (t+k)%Nt , x , y , z ,mi) );
                 }
-            }
+                k--;
+
+                for(j=0 ; j<R ; j++){
+                    mmprodv(aux , aux , getU(lattice, (t+(k+1)*ami[0])%Nt , (x+(k+1)*ami[1]+ j*ani[1])%N ,
+                            (y+(k+1)*ami[2]+ j*ani[2])%N , (z+(k+1)*ami[3]+ j*ani[3])%N , ni) );
+                }
+                j--;
+
+                for( ; k > -1 ; k--){
+                    hermcv( auxc , getU(lattice, (t+k+ (j+1)*ani[0])%Nt , (x+ (j+1)*ani[1])%N ,
+                        (y+ (j+1)*ani[2])%N , (z+ (j+1)*ani[3])%N , mi ) );
+                    mmprodv(aux, aux , auxc);
+                }
+                k++;
+
+                for( ; j > -1 ; j--){
+                    hermcv( auxc , getU(lattice, t , (x+ j*ani[1])%N ,
+                        (y+ j*ani[2])%N , (z+ j*ani[3])%N , ni ) );
+                    mmprodv(aux , aux , auxc);
+                }
+
+                sum += tracev(aux);
         }
-    }
+    }}}}
     free(auxc);
 	free(aux);
 	return sum/(2*3.0*totalV);
@@ -177,18 +167,15 @@ double polyakovLoopMeasure(LatticeSU2 * lattice){
     double * aux = malloc(sizeof(double)*4);
 
     t=0;
-    for(x=0 ; x<N ; x++){
-        for(y=0 ; y<N ;y++){
-            for(z=0 ; z<N ; z++){
-                setidv(aux);
-                for(k=0 ; k<Nt ; k++){
-                    mmprodv(aux, aux, getU(lattice, t+k , x, y, z, 0));
-                }
-
-                sum += tracev(aux);
-            }
+	for(x=0 ; x<lattice->N ; x++){
+	for(y=0 ; y<lattice->N ; y++){
+	for(z=0 ; z<lattice->N ; z++){
+        setidv(aux);
+        for(k=0 ; k<Nt ; k++){
+            mmprodv(aux, aux, getU(lattice, t+k , x, y, z, 0));
         }
-    }
+        sum += tracev(aux);
+    }}}
     free(aux);
     return sum/(2.0*spatialV);
 }
@@ -231,12 +218,12 @@ double gluonP(LatticeSU2 * lattice, double kz){
                 for(a=1;a<4;a++){
                     fouriercos = 0e0;
                     fouriersin = 0e0;
-                    for(z=0;z<N;z++){
+                    for(z=0;z<lattice->N;z++){
                         costemp = cos(2*M_PI*kz*z);
                         sintemp = sin(2*M_PI*kz*z);
-                        for(t=0;t<Nt;t++){
-                            for(x=0;x<N;x++){
-                                for(y=0;y<N;y++){
+                        for(t=0;t<lattice->Nt;t++){
+                            for(x=0;x<lattice->N;x++){
+                                for(y=0;y<lattice->N;y++){
                                     fouriercos += getU(lattice,t,x,y,z,mi)[a]*costemp;
                                     fouriersin += getU(lattice,t,x,y,z,mi)[a]*sintemp;
                                 }
@@ -252,10 +239,10 @@ double gluonP(LatticeSU2 * lattice, double kz){
             for(mi=0;mi<4;mi++){
                 for(a=1;a<4;a++){
                     double temp=0e0;
-                    for(z=0;z<N;z++){
-                        for(t=0;t<Nt;t++){
-                            for(x=0;x<N;x++){
-                                for(y=0;y<N;y++){
+                    for(z=0;z<lattice->N;z++){
+                        for(t=0;t<lattice->Nt;t++){
+                            for(x=0;x<lattice->N;x++){
+                                for(y=0;y<lattice->N;y++){
                                     temp += getU(lattice,t,x,y,z,mi)[a];
                                 }
                             }
@@ -326,22 +313,19 @@ void spatialSmearStep(LatticeSU2 * outlattice, LatticeSU2 * inlattice, double al
     double * aux = malloc(sizeof(double)*4);
     double * herm = malloc(sizeof(double)*4);
     double * sum = malloc(sizeof(double)*4);
-    for(t=0;t<Nt;t++){
-        for(x=0;x<N;x++){
-            for(y=0;y<N;y++){
-                for(z=0;z<N;z++){
-                    for(i=1;i<4;i++){
-                        cmprodv(sum, alpha_smear, getU(inlattice,t,x,y,z,i));
-                        updateStapleMeasurement(inlattice, t,x,y,z,i,aux);
-                        //hermcv(aux,aux);
-                        sumv(sum,sum,aux);
-                        reunitv(sum);
-                        copyv(getU(outlattice,t,x,y,z,i) , sum);
-                    }
-                }
-            }
+    for(t=0 ; t<outlattice->Nt ; t++){
+	for(x=0 ; x<outlattice->N ; x++){
+	for(y=0 ; y<outlattice->N ; y++){
+	for(z=0 ; z<outlattice->N ; z++){
+        for(i=1;i<4;i++){
+            cmprodv(sum, alpha_smear, getU(inlattice,t,x,y,z,i));
+            updateStapleMeasurement(inlattice, t,x,y,z,i,aux);
+            //hermcv(aux,aux);
+            sumv(sum,sum,aux);
+            reunitv(sum);
+            copyv(getU(outlattice,t,x,y,z,i) , sum);
         }
-    }
+    }}}}
     free(sum);
     free(herm);
     free(aux);
@@ -350,8 +334,7 @@ void spatialSmearStep(LatticeSU2 * outlattice, LatticeSU2 * inlattice, double al
 void spatialSmearing3(LatticeSU2 * outlattice, LatticeSU2 * inlattice, int n_smear, double alpha_smear){
     int i;
     copyl(outlattice,inlattice);
-    LatticeSU2 * templattice;
-    defineLatticeSU2(templattice,inlattice->N,inlattice->Nt);
+    LatticeSU2 * templattice = newLatticeSU2(inlattice->N,inlattice->Nt);
 
     for(i=0;i<n_smear;i++){
         copyl(templattice,outlattice);

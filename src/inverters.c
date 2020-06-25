@@ -935,8 +935,7 @@ double horizonWalk(LatticeSU2 * target_lattice, double * nHorizonOut, double * r
 	printf("Initial data save. Starting walk...\n");
 
 	// double * escaled_lattice = malloc(sizeof(double)*dimLattice);
-	LatticeSU2 * escaled_lattice;
-	defineLatticeSU2(escaled_lattice , target_lattice->N , target_lattice->Nt);
+	LatticeSU2 * escaled_lattice = newLatticeSU2(target_lattice->N , target_lattice->Nt);
 
 	double lambda1, third, fourth, r;
 	*nHorizonOut = 0;

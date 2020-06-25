@@ -1,5 +1,6 @@
 #include "statistics.h"
-#include "global.h"
+#include "utilities.h"
+#include "algebra.h"
 
 #include "nrutil.h"
 
@@ -25,7 +26,7 @@ int sortInt(int i , int j){
     return((int)(ran0(global_seed)*(j-i) + i));
 }
 
-void plaquetteHistogram(double * histo, double * lattice, int nbins){
+void plaquetteHistogram(double * histo, LatticeSU2 * lattice, int nbins){
     //return histogram of plaquette values (-1,1) in a given lattice configuration
 
     int ibin;

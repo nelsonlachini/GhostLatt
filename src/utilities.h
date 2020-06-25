@@ -136,6 +136,6 @@ double sortDouble(double i , double j);
 
 void printpos(double t, double x, double y , double z, double mi);
 
-void defineLatticeSU2(LatticeSU2 * lattice , int _N , int _Nt);
+LatticeSU2* newLatticeSU2(int _N, int _Nt);
 
 #endif

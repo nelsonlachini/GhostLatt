@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <complex.h>
 #include <stdio.h>
@@ -32,18 +31,17 @@ int main(){
     int N_hb 	= 1;		        // #heat-bath steps per sweep
     int N_mic 	= N/2;	            // #overrelaxation steps per sweep
 
-    LatticeSU2 lattice;
-    defineLatticeSU2(&lattice , N , Nt);
+    LatticeSU2 * lattice = newLatticeSU2(N,Nt); 
 
-    initl(&lattice , initial_order);			//initialize the lattice
+    initl(lattice , initial_order);			//initialize the lattice
 
-    // // HOR thermalization while measuring plaquette
+    // HOR thermalization and plaquette  measurement
     for(unsigned int i=0 ; i<N_therm ; i++){
-    	thermalizeLattice(&lattice, beta, 1, N_hb, N_mic);
-	    printf("\rHOR Sweep %d : plaquette = %lf",i,wilsonLoopMeasureSym(&lattice,1,1));	
+    	thermalizeLattice(lattice, beta, 1, N_hb, N_mic);
+	    printf("\rHOR Sweep %d : plaquette = %lf",i,wilsonLoopMeasureSym(lattice,1,1));	
     }
     
-    free(lattice.U);
+    free(lattice->U);
 
-    return 0;
+    return(0);
 }

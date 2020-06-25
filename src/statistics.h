@@ -1,6 +1,12 @@
 #ifndef STATISTICS_H
 #define STATISTICS_H
 
+#include "statistics.h"
+#include "utilities.h"
+#include "algebra.h"
+
+#include "nrutil.h"
+
 #define ITMAX 100
 #define EPS 3.0e-7
 #define FPMIN 1.0e-30
@@ -12,7 +18,7 @@ double naive_sampleVar(double * dataSet, int dim);
 
 int sortInt(int i , int j);
 
-void plaquetteHistogram(double * histo, double * lattice, int nbins);
+void plaquetteHistogram(double * histo, LatticeSU2 * lattice, int nbins);
 
 void bootstrapSimple(double * output, double * data, int n, int m, int K);
 

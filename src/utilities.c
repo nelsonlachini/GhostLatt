@@ -97,9 +97,9 @@ double * getU(LatticeSU2 * lattice, int t , int x , int y, int z , int mi){
 	return ( lattice->U + t*lattice->spatialV*16 + x*lattice->N2*16 + y*lattice->N*16 + z*16 + mi*4);
 }
 
-double * getUdim(LatticeSU2 * lattice, int t , int x , int y, int z , int mi, int N){
-	return ( lattice->U + t*lattice->spatialV*16 + x*lattice->N2*16 + y*lattice->N*16 + z*16 + mi*4);
-}
+// double * getUdim(LatticeSU2 * lattice, int t , int x , int y, int z , int mi, int N){
+// 	return ( lattice->U + t*lattice->spatialV*16 + x*lattice->N2*16 + y*lattice->N*16 + z*16 + mi*4);
+// }
 
 void printLattice(LatticeSU2 * lattice){
 	int t,x,y,z,mi;
@@ -647,13 +647,15 @@ void printpos(double t, double x, double y , double z, double mi){
 	printf("\n %lf | %lf | %lf | %lf | %lf \n",t,x,y,z,mi);
 }
 
-void defineLatticeSU2(LatticeSU2 * lattice , int _N , int _Nt){
-    lattice->N = _N;
-    lattice->Nt = _Nt;
-    lattice->totalV = _N*_N*_N*_Nt;
-    lattice->spatialV = _N*_N*_N;
-    lattice->dimLattice = totalV*4*4;
-    lattice->colorV = 3*totalV;
-    lattice->N2 = _N*_N;
-    lattice->U = malloc(sizeof(double)*lattice->dimLattice);
+LatticeSU2* newLatticeSU2(int _N, int _Nt) {    // emulates a constructor for lattice object 
+    LatticeSU2* lattice_out = malloc(sizeof(LatticeSU2));
+    lattice_out->N = _N;
+    lattice_out->Nt = _Nt;
+    lattice_out->totalV = _N*_N*_N*_Nt;
+    lattice_out->N2 = _N*_N;
+    lattice_out->spatialV = _N*_N*_N;
+    lattice_out->dimLattice = totalV*4*4;
+    lattice_out->colorV = 3*totalV;
+    lattice_out->U = malloc(sizeof(double)*lattice_out->dimLattice);
+  return lattice_out;
 }

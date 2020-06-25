@@ -1,7 +1,8 @@
 //Header file for nrutil.c code from Numerical Recipes 90
-
 #ifndef _NR_UTILS_H_
 #define _NR_UTILS_H_
+
+
 static double sqrarg;
 #define SQR(a) ((sqrarg=(a)) == 0.0 ? 0.0 : sqrarg*sqrarg)
 static double dsqrarg;
