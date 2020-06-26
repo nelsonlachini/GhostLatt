@@ -186,6 +186,9 @@ double measure_ghostp(LatticeSU2 * lattice, double *** G, double * kz, int kSize
     double complex * chute 		= malloc(sizeof(double complex)*colorV);
     double complex * source 	= malloc(sizeof(double complex)*colorV);
     double p[4] = {0,0,0,0};
+    double answer;
+    // define once and then reuse the previous solve as input
+    setzerovc(chute,colorV);    //define initial value for CG solve ??????? should be zero???????
 
     printf("\nGhost processing initiated.\n");
     for(i=0;i<kSize;i++){
@@ -194,16 +197,18 @@ double measure_ghostp(LatticeSU2 * lattice, double *** G, double * kz, int kSize
         //define source to plane wave
         //can add other colors here
         p[3] = kz[i];                   //set suitable 4vector, considering symmetric matrix
-        setplanewave(source,p,0);
+        answer = 0;
+        for(int j=1; j<=3; j++){         //average over colors
+            setplanewave(source,p,j);
+            getOrthogonalSpace(source, source, lattice);    //eliminating null vectors
 
-        //define initial value for CG ??????? should be zero???????
-        setzerovc(chute,colorV);
+            fpcgmr(chute, lattice , source, colorV);	//chute = (M^-1) . source = (M^-1) . M . planewave
 
-        //getOrthogonalSpace(source, source, lattice);    //eliminating null vectors
-        fpcgmr(chute, lattice , source, colorV);	//chute = (M^-1) . source = (M^-1) . M . planewave
-
-        (*G)[i][j_Ncf] = inprodvc(source,chute,colorV)/(double)(totalV);
-        printf("G[%.4lf]=%lf\n",kz[i],(*G)[i][j_Ncf]);
+            answer += inprodvc(source,chute,colorV)/(double)(totalV);
+            printf("\nG_temp=%lf\n",answer);
+        }
+        (*G)[i][j_Ncf] = answer/3.0;
+        printf("\nG[%.4lf]=%lf\n",kz[i],(*G)[i][j_Ncf]);
     }
     return(((double)(clock() - dtime))/(CLOCKS_PER_SEC));
 }
