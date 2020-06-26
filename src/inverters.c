@@ -209,7 +209,7 @@ double rfpcgmr(double * x , LatticeSU2 * lattice , double * b,  int dim, double 
 		printf("\r Iter = %d ; |r_CG| = %.0e ",(*iCG),sqrt(rnew));
 		fflush(stdout);
 
-		if( (sqrt(rnew) < tol) || (sqrt(rnew) > 1e2) || *iCG > ITERATION_TOL)					//if sqrt(rsnew) < tol
+		if( (sqrt(rnew) < tol) || (sqrt(rnew) > 1e8) || *iCG > ITERATION_TOL)					//if sqrt(rsnew) < tol
 			break;								//break
 
 		cprodvr(auxv , rnew/rold , p ,dim);
@@ -405,7 +405,7 @@ double fpcgmr(double complex * x , LatticeSU2 * lattice , double complex * b,  i
 	//A is the FP matrix defined from the lattice links applied to the source b
 	//in the usual context dim = N_colors * N^4 ==> the vector will have a super-index (a,x)
 
-	double tol = 1E-10;
+	double tol = 1e-10;
 	int i,icont = 0;
 	double complex alpha, rnew,rold;;
 	double complex * auxv = malloc(sizeof(double complex)*dim);

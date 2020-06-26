@@ -852,16 +852,17 @@ void setplanewave(double complex * target, double * p , int atarget){
 	//set target vector to plane wave to exp(-2*pi*i*(p.x)) within
 	//the subspace of a==atarget and zero to the remaining
 	int a,t,x,y,z;
-	for(a=0;a<3;a++){
+	for(a=1;a<4;a++){
 		for(t=0;t<Nt;t++){
 			for(x=0;x<N;x++){
 				for(y=0;y<N;y++){
 					for(z=0;z<N;z++){
 						if(a==atarget){
-							*getelvc(target,a,t,x,y,z) = cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) );
+							// need to correct getelvc for a = 1,2,3 instead a = 0,1,2
+							*getelvc(target,a-1,t,x,y,z) = cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) );
 						}
 						else{
-							*getelvc(target,a,t,x,y,z) = 0E0;
+							*getelvc(target,a-1,t,x,y,z) = 0E0;
 						}
 					}
 				}
@@ -874,12 +875,12 @@ void setplanewaveallcolors(double complex * target, double * p ){
 	//set target vector to plane wave to exp(-2*pi*i*(p.x)) within
 	//the subspace of a==atarget and zero to the remaining
 	int a,t,x,y,z;
-	for(a=0;a<3;a++){
+	for(a=1;a<=3;a++){
 		for(t=0;t<Nt;t++){
 			for(x=0;x<N;x++){
 				for(y=0;y<N;y++){
 					for(z=0;z<N;z++){
-							*getelvc(target,a,t,x,y,z) = cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) );
+							*getelvc(target,a-1,t,x,y,z) = cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) );
 					}
 				}
 			}
@@ -891,16 +892,16 @@ void rsetplanewave(double * target, double * p , int atarget){
 	//set target vector to plane wave to exp(-2*pi*i*(p.x)) within
 	//the subspace of a==atarget and zero to the remaining
 	int a,t,x,y,z;
-	for(a=0;a<3;a++){
+	for(a=1;a<=3;a++){
 		for(t=0;t<Nt;t++){
 			for(x=0;x<N;x++){
 				for(y=0;y<N;y++){
 					for(z=0;z<N;z++){
 						if(a==atarget){
-							*getelvr(target,a,t,x,y,z) = creal(cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) ));
+							*getelvr(target,a-1,t,x,y,z) = creal(cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) ));
 						}
 						else{
-							*getelvr(target,a,t,x,y,z) = 0E0;
+							*getelvr(target,a-1,t,x,y,z) = 0E0;
 						}
 					}
 				}
@@ -913,12 +914,12 @@ void rsetplanewaveallcolors(double * target, double * p){
 	//set target vector to plane wave to exp(-2*pi*i*(p.x)) within
 	//the subspace of a==atarget and zero to the remaining
 	int a,t,x,y,z;
-	for(a=0;a<3;a++){
+	for(a=1;a<=3;a++){
 		for(t=0;t<Nt;t++){
 			for(x=0;x<N;x++){
 				for(y=0;y<N;y++){
 					for(z=0;z<N;z++){
-							*getelvr(target,a,t,x,y,z) = creal(cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) ));
+							*getelvr(target,a-1,t,x,y,z) = creal(cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) ));
 					}
 				}
 			}
