@@ -187,7 +187,7 @@ double rfpcgmr(double * x , LatticeSU2 * lattice , double * b,  int dim, double 
 
 	rold = inprodvr(r,r,dim);
 
-	printf("\n Iter = %d ; |r_CG| = %.0e ",*iCG,sqrt(rnew));
+	// printf("\n Iter = %d ; |r_CG| = %.0e ",*iCG,sqrt(rnew));
 	fflush(stdout);
 
 	while(1){														//for i = 1:length(b)
@@ -206,7 +206,7 @@ double rfpcgmr(double * x , LatticeSU2 * lattice , double * b,  int dim, double 
 
 		rnew = inprodvr(r,r,dim);				//rsnew = r' * r;
 
-		printf("\r Iter = %d ; |r_CG| = %.0e ",(*iCG),sqrt(rnew));
+		// printf("\r Iter = %d ; |r_CG| = %.0e ",(*iCG),sqrt(rnew));
 		fflush(stdout);
 
 		if( (sqrt(rnew) < tol) || (sqrt(rnew) > 1e8) || *iCG > ITERATION_TOL)					//if sqrt(rsnew) < tol
@@ -244,7 +244,7 @@ void rgetOrthogonalSpace(double * c, double * b, LatticeSU2 * lattice, double cg
 
 int rsmallest_eigen_cg(LatticeSU2 * lattice, double * lambda1, double * eigen_out
 	 	, double eigen_tol , double * vguess, double * r_cg, int * iCG, double cg_tol){
-	int i;
+	
 	clock_t dtime = clock();
 	double norm;
 	double eigen_v = 0e0;
@@ -253,6 +253,7 @@ int rsmallest_eigen_cg(LatticeSU2 * lattice, double * lambda1, double * eigen_ou
 	double * Y = malloc(sizeof(double)*colorV);
 	double * Xp = malloc(sizeof(double)*colorV);
 	*r_cg = 0e0;
+	int i_PM = 0;
 	//double pmin[4] = {0e0,0e0,0e0,1e0/N};
 	//rsetplanewave(X, pmin ,2);
 	//rsetplanewaveallcolors(X, pmin);
@@ -262,10 +263,9 @@ int rsmallest_eigen_cg(LatticeSU2 * lattice, double * lambda1, double * eigen_ou
 	copyvr(X,vguess,colorV);											//vguess is some guess to the eigenvector with the smallest eigenvalue
 
 	//Power method
-	i=0;
 
 	//rgetOrthogonalSpace(X,X,lattice);
-	printf("\nPM: Iter=%d | lambda_1=%e |  lambda1_norm=%e",i,1e0/eigen_vp,norm);
+	printf("\nPM: Iter=%d | lambda_1=%e |  lambda1_norm=%e",i_PM,1e0/eigen_vp,norm);
 	fflush(stdout);
 
 	do{
@@ -297,17 +297,16 @@ int rsmallest_eigen_cg(LatticeSU2 * lattice, double * lambda1, double * eigen_ou
 		copyvr(X,Xp,colorV);
 		reunitvr(X,colorV);
 
-		i++;
+		i_PM++;
 		eigen_vp = (eigen_vp);
 		rfpapply(Xp,lattice,X,colorV);
 		cprodvr(Y,-1e0/eigen_vp,X,colorV);
 		sumvr(Xp,Xp,Y,colorV);
 		norm = normvr(Xp,colorV);
-		printf("\nPM: Iter=%d | lambda_1=%e |  lambda1_norm=%e",i,1e0/eigen_vp,norm);
+		printf("\nPM: Iter=%d | lambda_1=%e |  lambda1_norm=%e",i_PM,1e0/eigen_vp,norm);
 		fflush(stdout);
 
-		cprodvr(X, getSignal(min(X,colorV)), X, colorV);		//Attilio's trick
-
+		// cprodvr(X, getSignal(min(X,colorV)), X, colorV);		//Attilio's trick
 	}while( norm > eigen_tol);	//this way the eigenvalue equation is directly verified, but is slower
 
 	//	printf("\n ev = %lf | evp = %lf | abs() = %lf | tol = %lf \n",1.0/eigen_v,1.0/eigen_vp,fabs(1.0/eigen_v - 1.0/eigen_vp),eigen_tol);
@@ -319,7 +318,7 @@ int rsmallest_eigen_cg(LatticeSU2 * lattice, double * lambda1, double * eigen_ou
 	free(Xp);
 	free(Y);
 	*lambda1 = 1e0/eigen_vp;
-	return( i );
+	return( (double)(clock()-dtime)/CLOCKS_PER_SEC );
 }
 
 //CG and PM with complex vector
@@ -428,7 +427,7 @@ double fpcgmr(double complex * x , LatticeSU2 * lattice , double complex * b,  i
 
 	rold = inprodvc(r,r,dim);
 
-	printf("\n|r_CG| = %.0e ",sqrt(rnew));
+	// printf("\n|r_CG| = %.0e ",sqrt(rnew));
 	fflush(stdout);
 
 	while(1){														//for i = 1:length(b)
@@ -446,7 +445,7 @@ double fpcgmr(double complex * x , LatticeSU2 * lattice , double complex * b,  i
 
 		rnew = inprodvc(r,r,dim);				//rsnew = r' * r;
 
-		printf("\r|r_CG| = %.0e ",sqrt(rnew));
+		// printf("\r|r_CG| = %.0e ",sqrt(rnew));
 		fflush(stdout);
 
 		if(sqrt(rnew) < tol)					//if sqrt(rsnew) < tol

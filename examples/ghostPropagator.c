@@ -40,7 +40,8 @@ int main(){
 	double initial_order = 0e0;		        	    //0 to all links initially equal to identity
     char file_name[MAXIMUM_NAME_LENGTH], aux[15];
     
-    LatticeSU2 * lattice = newLatticeSU2(N,Nt);
+    LatticeSU2 * lattice = newLatticeSU2(N,Nt);                     //lattice alocation
+
     initl(lattice , initial_order);                                //cold initialization
     thermalizeLattice(lattice, beta, N_therm, N_hb, N_mic);        //thermalization sweeps
 
