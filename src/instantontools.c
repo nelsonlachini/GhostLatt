@@ -20,8 +20,8 @@ void getImagv(double * Mout, double * vin){
 void plaquetteProd(double * Vout, double * lattice , int t, int x, int y, int z, int mu, int nu){
 
 	int i, anu[4], amu[4];
-	setquadv(&amu[0],mu);
-	setquadv(&anu[0],nu);
+	setUnitVector(&amu[0],mu);
+	setUnitVector(&anu[0],nu);
 	double xv[4] = {t,x,y,z};
 
 	//if(xv[mu]==N-1 || xv[nu]==N-1){
@@ -30,23 +30,23 @@ void plaquetteProd(double * Vout, double * lattice , int t, int x, int y, int z,
 	//else{
 		double * aux = malloc(sizeof(double)*4);
 		setidv(Vout);
-		mmprodv(Vout, Vout, getU(lattice,t,x,y,z,mu));
+		mmprodv(Vout, Vout, getLink(lattice,t,x,y,z,mu));
 		//printm(Vout);
-		//printm(getU(lattice,t,x,y,z,mu));
+		//printm(getLink(lattice,t,x,y,z,mu));
 
-		mmprodv(Vout, Vout, getU(lattice,getStep(t,amu[0]),getStep(x,amu[1]),getStep(y,amu[2]),getStep(z,amu[3]),nu));
+		mmprodv(Vout, Vout, getLink(lattice,getStep(t,amu[0]),getStep(x,amu[1]),getStep(y,amu[2]),getStep(z,amu[3]),nu));
 		//printm(Vout);
-		//printm(getU(lattice,getStep(t,amu[0]),getStep(x,amu[1]),getStep(y,amu[2]),getStep(z,amu[3]),nu));
+		//printm(getLink(lattice,getStep(t,amu[0]),getStep(x,amu[1]),getStep(y,amu[2]),getStep(z,amu[3]),nu));
 
-		hermcv(aux, getU(lattice,getStep(t,anu[0]),getStep(x,anu[1]),getStep(y,anu[2]),getStep(z,anu[3]),mu) );
+		hermcv(aux, getLink(lattice,getStep(t,anu[0]),getStep(x,anu[1]),getStep(y,anu[2]),getStep(z,anu[3]),mu) );
 		mmprodv(Vout, Vout, aux);
 		//printm(Vout);
-		//printm(getU(lattice,getStep(t,anu[0]),getStep(x,anu[1]),getStep(y,anu[2]),getStep(z,anu[3]),mu));
+		//printm(getLink(lattice,getStep(t,anu[0]),getStep(x,anu[1]),getStep(y,anu[2]),getStep(z,anu[3]),mu));
 
-		hermcv(aux, getU(lattice,t,x,y,z,nu) );
+		hermcv(aux, getLink(lattice,t,x,y,z,nu) );
 		mmprodv(Vout, Vout, aux);
 		//printm(Vout);
-		//printm(getU(lattice,t,x,y,z,nu));
+		//printm(getLink(lattice,t,x,y,z,nu));
 
 		free(aux);
 	//}
@@ -59,27 +59,27 @@ void plaquetteProdG(double * Vout, double * lattice , int t, int x, int y, int z
 	double * aux4 = malloc(sizeof(double)*4);
 
 	int i, anu[4], amu[4];
-	setquadv(&amu[0],mu);
-	setquadv(&anu[0],nu);
+	setUnitVector(&amu[0],mu);
+	setUnitVector(&anu[0],nu);
 
 	setidv(Vout);
 
 	if(mu>0){
-		copyv(aux1,getU(lattice,t,x,y,z,mu) );
-		hermcv(aux3, getU(lattice,getStep(t,anu[0]),getStep(x,anu[1]),getStep(y,anu[2]),getStep(z,anu[3]) ,mu) );
+		copyv(aux1,getLink(lattice,t,x,y,z,mu) );
+		hermcv(aux3, getLink(lattice,getStep(t,anu[0]),getStep(x,anu[1]),getStep(y,anu[2]),getStep(z,anu[3]) ,mu) );
 	}
 	else{
-		hermcv(aux1, getU(lattice,getStep(t,amu[0]),getStep(x,amu[1]),getStep(y,amu[2]),getStep(z,amu[3]),-mu) );
-		copyv(aux3, getU(lattice,getStep(t,amu[0]+anu[0]),getStep(x,amu[1]+anu[1]),getStep(y,amu[2]+anu[2]),getStep(z,amu[3]+anu[3]),-mu) );
+		hermcv(aux1, getLink(lattice,getStep(t,amu[0]),getStep(x,amu[1]),getStep(y,amu[2]),getStep(z,amu[3]),-mu) );
+		copyv(aux3, getLink(lattice,getStep(t,amu[0]+anu[0]),getStep(x,amu[1]+anu[1]),getStep(y,amu[2]+anu[2]),getStep(z,amu[3]+anu[3]),-mu) );
 	}
 
 	if(nu>0){
-		copyv(aux2, getU(lattice,getStep(t,amu[0]),getStep(x,amu[1]),getStep(y,amu[2]),getStep(z,amu[3]),nu) );
-		hermcv(aux4, getU(lattice,t,x,y,z,nu) );
+		copyv(aux2, getLink(lattice,getStep(t,amu[0]),getStep(x,amu[1]),getStep(y,amu[2]),getStep(z,amu[3]),nu) );
+		hermcv(aux4, getLink(lattice,t,x,y,z,nu) );
 	}
 	else{
-		hermcv(aux2, getU(lattice,getStep(t,amu[0]+anu[0]),getStep(x,amu[1]+anu[1]),getStep(y,amu[2]+anu[2]),getStep(z,amu[3]+anu[3]) ,-nu) );
-		copyv(aux4, getU(lattice,getStep(t,anu[0]),getStep(x,anu[1]),getStep(y,anu[2]),getStep(z,anu[3]) ,-nu) );
+		hermcv(aux2, getLink(lattice,getStep(t,amu[0]+anu[0]),getStep(x,amu[1]+anu[1]),getStep(y,amu[2]+anu[2]),getStep(z,amu[3]+anu[3]) ,-nu) );
+		copyv(aux4, getLink(lattice,getStep(t,anu[0]),getStep(x,anu[1]),getStep(y,anu[2]),getStep(z,anu[3]) ,-nu) );
 	}
 
 	mmprodv(Vout, Vout, aux1);
@@ -99,26 +99,26 @@ void plaquetteProdG(double * Vout, double * lattice , int t, int x, int y, int z
 void cloverProd(double * Vout, double * lattice , int t, int x, int y, int z, int mu, int nu){
 	double * aux = malloc(sizeof(double)*4);
 	int i, anu[4], amu[4];
-	setquadv(&amu[0],mu);
-	setquadv(&anu[0],nu);
+	setUnitVector(&amu[0],mu);
+	setUnitVector(&anu[0],nu);
 
 	setidv(Vout);
 
-	mmprodv(Vout, Vout, getU(lattice,t,x,y,z,mu));
-	mmprodv(Vout, Vout, getU(lattice,getStep(t,amu[0]),getStep(x,amu[1]),getStep(y,amu[2]),getStep(z,amu[3]),mu));
+	mmprodv(Vout, Vout, getLink(lattice,t,x,y,z,mu));
+	mmprodv(Vout, Vout, getLink(lattice,getStep(t,amu[0]),getStep(x,amu[1]),getStep(y,amu[2]),getStep(z,amu[3]),mu));
 
-	mmprodv(Vout, Vout, getU(lattice,getStep(t,2*amu[0]),getStep(x,2*amu[1]),getStep(y,2*amu[2]),getStep(z,2*amu[3]),nu));
-	mmprodv(Vout, Vout, getU(lattice,getStep(t,2*amu[0]+anu[0]),getStep(x,2*amu[1]+anu[1]),getStep(y,2*amu[2]+anu[2]),getStep(z,2*amu[3]+anu[3]),nu));
+	mmprodv(Vout, Vout, getLink(lattice,getStep(t,2*amu[0]),getStep(x,2*amu[1]),getStep(y,2*amu[2]),getStep(z,2*amu[3]),nu));
+	mmprodv(Vout, Vout, getLink(lattice,getStep(t,2*amu[0]+anu[0]),getStep(x,2*amu[1]+anu[1]),getStep(y,2*amu[2]+anu[2]),getStep(z,2*amu[3]+anu[3]),nu));
 
 
-	hermcv(aux, getU(lattice,getStep(t,amu[0]+2*anu[0]),getStep(x,amu[1]+2*anu[1]),getStep(y,amu[2]+2*anu[2]),getStep(z,amu[3]+2*anu[3]),mu));
+	hermcv(aux, getLink(lattice,getStep(t,amu[0]+2*anu[0]),getStep(x,amu[1]+2*anu[1]),getStep(y,amu[2]+2*anu[2]),getStep(z,amu[3]+2*anu[3]),mu));
 	mmprodv(Vout, Vout, aux);
-	hermcv(aux, getU(lattice,getStep(t,2*anu[0]),getStep(x,2*anu[1]),getStep(y,2*anu[2]),getStep(z,2*anu[3]),mu));
+	hermcv(aux, getLink(lattice,getStep(t,2*anu[0]),getStep(x,2*anu[1]),getStep(y,2*anu[2]),getStep(z,2*anu[3]),mu));
 	mmprodv(Vout, Vout, aux);
 
-	hermcv(aux, getU(lattice,getStep(t,anu[0]),getStep(x,anu[1]),getStep(y,anu[2]),getStep(z,anu[3]),nu));
+	hermcv(aux, getLink(lattice,getStep(t,anu[0]),getStep(x,anu[1]),getStep(y,anu[2]),getStep(z,anu[3]),nu));
 	mmprodv(Vout, Vout, aux);
-	hermcv(aux, getU(lattice,t,x,y,z,nu) );
+	hermcv(aux, getLink(lattice,t,x,y,z,nu) );
 	mmprodv(Vout, Vout, aux);
 
 	free(aux);
@@ -191,7 +191,7 @@ void coolingStep(double * lattice){
 					for(mi=0 ; mi<4 ; mi++){
 						updateStaple(lattice ,t,x,y,z,mi , staple);
 						hermcv( staple , staple);
-						cmprodv( getU(lattice,t,x,y,z,mi), 1e0/sqrt(detv(staple)) , staple);
+						cmprodv( getLink(lattice,t,x,y,z,mi), 1e0/sqrt(detv(staple)) , staple);
 					}
 				}
 			}
@@ -222,7 +222,7 @@ void coolingStepBorder(double * lattice){
 							//printpos(t,x,y,z,mi);
 							updateStaple(lattice ,t,x,y,z,mi , staple);
 							hermcv( staple , staple);
-							cmprodv( getU(lattice,t,x,y,z,mi), 1e0/sqrt(detv(staple)) , staple);
+							cmprodv( getLink(lattice,t,x,y,z,mi), 1e0/sqrt(detv(staple)) , staple);
 						}
 					}
 				}
@@ -251,19 +251,19 @@ void APEsmearStep(double * lattice, double alphaape){
 			for(y=0 ; y<N ; y++){
 				for(z=0 ; z<N ; z++){
 					for(mi=0 ; mi<4 ; mi++){
-						cmprodv(aux,1.0-alphaape,getU(lattice,t,x,y,z,mi));
+						cmprodv(aux,1.0-alphaape,getLink(lattice,t,x,y,z,mi));
 
 						updateStaple(lattice, t, x, y, z, mi, staple);
 						cmprodv(staple,alphaape/6e0,staple);
 
-						sumv(getU(temp,t,x,y,z,mi), aux, staple);
-						cmprodv(getU(temp,t,x,y,z,mi), 1e0/sqrt(detv(getU(temp,t,x,y,z,mi))) , getU(temp,t,x,y,z,mi));
+						sumv(getLink(temp,t,x,y,z,mi), aux, staple);
+						cmprodv(getLink(temp,t,x,y,z,mi), 1e0/sqrt(detv(getLink(temp,t,x,y,z,mi))) , getLink(temp,t,x,y,z,mi));
 					}
 				}
 			}
 		}
 	}
-	copyl(lattice,temp);
+	copyLatticeLinkSU2(lattice,temp);
 	free(staple);
 	free(aux);
 	free(temp);

@@ -93,15 +93,15 @@ void fprintm(FILE * file , double * A){
 	fprintf(file, "\n");
 }
 
-double * getU(LatticeSU2 * lattice, int t , int x , int y, int z , int mi){
+double * getLink(LatticeLinkSU2 * lattice, int t , int x , int y, int z , int mi){
 	return ( lattice->U + t*lattice->spatialV*16 + x*lattice->N2*16 + y*lattice->N*16 + z*16 + mi*4);
 }
 
-// double * getUdim(LatticeSU2 * lattice, int t , int x , int y, int z , int mi, int N){
+// double * getLinkdim(LatticeLinkSU2 * lattice, int t , int x , int y, int z , int mi, int N){
 // 	return ( lattice->U + t*lattice->spatialV*16 + x*lattice->N2*16 + y*lattice->N*16 + z*16 + mi*4);
 // }
 
-void printLattice(LatticeSU2 * lattice){
+void printLattice(LatticeLinkSU2 * lattice){
 	int t,x,y,z,mi;
 	printf("------------------");
 	for(t=0 ; t<lattice->Nt ; t++){
@@ -110,7 +110,7 @@ void printLattice(LatticeSU2 * lattice){
 	for(z=0 ; z<lattice->N ; z++){
 		for(mi=0 ; mi<4; mi++){
 			printf("\n");
-			printm( getU(lattice,t,x,y,z,mi) );
+			printm( getLink(lattice,t,x,y,z,mi) );
 		}
 	}}}}
 	printf("------------------");
@@ -172,15 +172,28 @@ void copymr(double * Mout , double * Min , int dim){
 	}
 }
 
-void copyvr(double * vout, double * vin , int dim){
+void copyvr(double * vout, double * vin, int dim){
 	int i;
-	for(i=0;i<dim;i++){
+	for(i=0 ; i<dim ; i++)
 		vout[i] = vin[i];
-	}
+}
+
+void copyLatticeColorVectorReal(LatticeColorVectorReal * vout, LatticeColorVectorReal * vin){
+	int i;
+	//check dimensions
+	if((vout->N != vin->N) || (vout->Nt != vin->Nt))
+		printf("\nWARNING! Vectors have different dimensions!\n");
+	else
+		for(i=0 ; i<vout->dimVector ; i++)
+			vout->vec[i] = vin->vec[i];
 }
 
 double * getelvr(double * vr , int a , int t , int x , int y , int z){
 	return(vr + N*(N*(N*(N*a+t) +x) + y) + z);
+}
+
+double * getLatticeColorVectorReal(LatticeColorVectorReal * vr , int a , int t , int x , int y , int z){
+	return(vr->vec + vr->N*(vr->N*(vr->N*(vr->Nt*a+t) +x) + y) + z );
 }
 
 void printvr(double * V , int dim){
@@ -218,6 +231,16 @@ void copyvc(double complex * Vout , double complex * Vin, int dim){
 	}
 }
 
+void copyLatticeColorVectorComplex(LatticeColorVectorComplex * vout , LatticeColorVectorComplex * vin){
+	int i;
+	if((vout->N != vin->N) || (vout->Nt != vin->Nt))
+		printf("\nWARNING! Vectors have different dimensions!\n");
+	else
+		for(i=0;i<vout->dimVector;i++)
+			vout->vec[i] = vin->vec[i];
+		
+}
+
 void copymc(double complex * Mout , double complex * Min , int dim){
 	int i,j;
 	for(i=0;i<dim;i++){
@@ -243,6 +266,10 @@ double complex * getelvc(double complex * vc , int a , int t , int x , int y , i
 	return(vc + a*totalV + t*spatialV + x*N2 + y*N + z);
 }
 
+double complex * getLatticeColorVectorComplex(LatticeColorVectorComplex * vc , int a , int t , int x , int y , int z){
+	return(vc->vec + vc->N*(vc->N*(vc->N*(vc->Nt*a+t) +x) + y) + z );
+}
+
 void converttov(double * vout, double complex * vin){
 	vout[0] = creal(*getelmc(vin,0,0,2));
 	vout[1] = cimag(*getelmc(vin,0,1,2));
@@ -252,7 +279,7 @@ void converttov(double * vout, double complex * vin){
 
 ////////////////////////////// OTHER STUFF
 
-void setquadv(int * amu, int mu){
+void setUnitVector(int * amu, int mu){
 	int i;
 	for(i=0;i<4;i++){
 		if(abs(mu)==i){
@@ -264,7 +291,7 @@ void setquadv(int * amu, int mu){
 	}
 }
 
-void initl(LatticeSU2 * lattice , float parameter){
+void initl(LatticeLinkSU2 * lattice , float parameter){
 	int t,x,y,z,mi,a,b;
 	for(t=0 ; t<lattice->Nt ; t++){
 	for(x=0 ; x<lattice->N ; x++){
@@ -272,16 +299,16 @@ void initl(LatticeSU2 * lattice , float parameter){
 	for(z=0 ; z<lattice->N ; z++){
 		for(mi=0 ; mi<4; mi++){
 			if(parameter == 0){
-				setidv( getU(lattice, t,x,y,z,mi) );
+				setidv( getLink(lattice, t,x,y,z,mi) );
 			}
 			else{
-				randSU2v(getU(lattice, t,x,y,z,mi) , global_seed , parameter);
+				randSU2v(getLink(lattice, t,x,y,z,mi) , global_seed , parameter);
 			}
 		}
 	}}}}
 }
 
-void reunitl(LatticeSU2 * lattice){
+void reunitLatticeLinkSU2(LatticeLinkSU2 * lattice){
 	int t,x,y,z,mi,i;
 	double * aux_link;
 	double norm;
@@ -290,7 +317,7 @@ void reunitl(LatticeSU2 * lattice){
 	for(y=0 ; y<lattice->N ; y++){
 	for(z=0 ; z<lattice->N ; z++){
 		for(mi=0 ; mi<4; mi++){
-			aux_link = getU(lattice, t,x,y,z,mi);
+			aux_link = getLink(lattice, t,x,y,z,mi);
 			norm = sqrt(detv(aux_link));
 			//printc(detv(aux_link));
 			for(i=0;i<4;i++){
@@ -332,20 +359,20 @@ double getStepT( double coord , double dcoord ){
 	return aux;
 }
 
-void copyl(LatticeSU2 * Lout , LatticeSU2 * Lin){
+void copyLatticeLinkSU2(LatticeLinkSU2 * Lout , LatticeLinkSU2 * Lin){
 	int t,x,y,z,mi,a,b;
 	for(t=0 ; t<Lout->Nt ; t++){
 	for(x=0 ; x<Lout->N ; x++){
 	for(y=0 ; y<Lout->N ; y++){
 	for(z=0 ; z<Lout->N ; z++){
 		for(mi=0 ; mi<4; mi++){
-			copyv( getU(Lout, t,x,y,z,mi) , getU(Lin,t,x,y,z,mi) );
+			copyv( getLink(Lout, t,x,y,z,mi) , getLink(Lin,t,x,y,z,mi) );
 		}
 	}}}}
 }
 
-double * getg(double * g, int t , int x , int y, int z){
-	return ( g + t*spatialV*4 + x*N2*4 + y*N*4 + z*4);
+double * getg(LatticeGaugeSU2 * gauge_transf, int t , int x , int y, int z){
+	return ( gauge_transf->g + t*gauge_transf->spatialV*4 + x*gauge_transf->N2*4 + y*gauge_transf->N*4 + z*4);
 }
 
 void printvcbycolor(double complex * v, int a){
@@ -373,7 +400,7 @@ void progress_panel(int i, int total){
 		fflush(stdout);
 	}
 
-void save_lattice(LatticeSU2 * lattice, char * file_name){
+void saveLatticeLinkSU2(LatticeLinkSU2 * lattice, char * file_name){
 	//always use double quotes to pass file_name
 	FILE * fl;
 	fl = fopen( file_name , "wb");
@@ -387,7 +414,7 @@ void save_lattice(LatticeSU2 * lattice, char * file_name){
 	fclose(fl);
 }
 
-void save_vector(double complex * vector, char * file_name){
+void saveLatticeColorVectorComplex(LatticeColorVectorComplex * vector, char * file_name){
 	//always use double quotes to pass file_name
 	FILE * fl;
 	fl = fopen( file_name , "wb");
@@ -401,11 +428,11 @@ void save_vector(double complex * vector, char * file_name){
 	fclose(fl);
 }
 
-void save_rvector(double * vector, char * file_name){
+void saveLatticeColorVectorReal(LatticeColorVectorReal * vector, char * file_name){
 	//always use double quotes to pass file_name
 	FILE * fl;
 	fl = fopen( file_name , "wb");
-	if( fwrite(vector, sizeof(double) , colorV , fl) ) {
+	if( fwrite(vector->vec, sizeof(double) , vector->dimVector , fl) ) {
 		//printf("\n Vector saved");
 	}
 	else{
@@ -431,7 +458,7 @@ void getName(char * out, char * header , double num){
 
 }
 
-void load_lattice(LatticeSU2 * lattice , char * file_name){
+void loadLatticeLinkSU2(LatticeLinkSU2 * lattice , char * file_name){
 	FILE * fl;
 	fl = fopen( file_name, "rb" );
 	if( fread( lattice->U, sizeof(double) , lattice->dimLattice , fl) ){
@@ -444,10 +471,23 @@ void load_lattice(LatticeSU2 * lattice , char * file_name){
 	}
 }
 
-void load_rvector(double * vector , char * file_name){
+void loadLatticeColorVectorReal(LatticeColorVectorReal * vector , char * file_name){
 	FILE * fl;
-	fl = fopen( file_name, "rb" );
-	if( fread( vector, sizeof(double) , colorV , fl) ){
+	fl = fopen(file_name, "rb");
+	if( fread(vector->vec, sizeof(double), vector->dimVector, fl) ){
+		printf("\n Vector loaded");
+	}
+	else{
+		perror("Error loading vector");
+		exit(EXIT_FAILURE);
+	}
+	fclose(fl);
+}
+
+void loadLatticeColorVectorComplex(LatticeColorVectorComplex * vector , char * file_name){
+	FILE * fl;
+	fl = fopen(file_name, "rb");
+	if( fread(vector->vec, sizeof(double complex), vector->dimVector, fl) ){
 		printf("\n Vector loaded");
 	}
 	else{
@@ -469,7 +509,7 @@ int compareLink(double * link1, double * link2){
 	return 1;
 }
 
-int compareLattice(LatticeSU2 * lattice1, LatticeSU2 * lattice2){
+int compareLattice(LatticeLinkSU2 * lattice1, LatticeLinkSU2 * lattice2){
 	int t,x,y,z,mi,a,b;
 	double complex * aux = malloc(sizeof(double complex)*4);
 		for(t=0 ; t<lattice1->Nt ; t++){
@@ -477,7 +517,7 @@ int compareLattice(LatticeSU2 * lattice1, LatticeSU2 * lattice2){
 		for(y=0 ; y<lattice1->N ; y++){
 		for(z=0 ; z<lattice1->N ; z++){
 			for(mi=0 ; mi<4; mi++){
-				if( !compareLink( getU(lattice1, t,x,y,z,mi) , getU(lattice2,t,x,y,z,mi) )  ){
+				if( !compareLink( getLink(lattice1, t,x,y,z,mi) , getLink(lattice2,t,x,y,z,mi) )  ){
 					printf("\n ----> Different lattices!");
 					return 0;
 				}
@@ -487,11 +527,15 @@ int compareLattice(LatticeSU2 * lattice1, LatticeSU2 * lattice2){
 	return 1;
 }
 
-int comparevc(double complex * v1, double complex * v2, int dim){
+int compareLatticeColorVectorComplex(LatticeColorVectorComplex * v1, LatticeColorVectorComplex * v2){
 	int i;
 	double tol = 1e-13;
-	for(i=0;i<dim;i++){
-		if( cabs(v1[i] - v2[i]) > tol){
+	if(v1->dimVector != v2->dimVector){
+		printf("\n Vectors have different dimensions!");
+		return(0);
+	}
+	for(i=0;i<v1->dimVector;i++){
+		if( cabs(v1->vec[i] - v2->vec[i]) > tol){
 			printf("\n ----> Different vectors! <----");
 			return(0);
 		}
@@ -500,11 +544,11 @@ int comparevc(double complex * v1, double complex * v2, int dim){
 	return(1);
 }
 
-int comparevr(double * v1, double * v2, int dim){
+int compareLatticeColorVectorReal(LatticeColorVectorReal * v1, LatticeColorVectorReal * v2){
 	int i;
 	double tol = 1e-13;
-	for(i=0;i<dim;i++){
-		if( fabs(v1[i] - v2[i]) > tol){
+	for(i=0;i<v1->dimVector;i++){
+		if( fabs(v1->vec[i] - v2->vec[i]) > tol){
 			printf("\n ----> Different vectors! <----");
 			return(0);
 		}
@@ -513,33 +557,33 @@ int comparevr(double * v1, double * v2, int dim){
 	return(1);
 }
 
-void reescaleGaugeField(LatticeSU2 * out, LatticeSU2 * in, double scale){
+void reescaleGaugeField(LatticeLinkSU2 * out, LatticeLinkSU2 * in, double scale){
 	int t,x,y,z,mi,a;
 	for(t=0 ; t<out->Nt ; t++){
 	for(x=0 ; x<out->N ; x++){
 	for(y=0 ; y<out->N ; y++){
 	for(z=0 ; z<out->N ; z++){
 		for(mi=0 ; mi<4 ; mi++){
-			getU(out,t,x,y,z,mi)[0] = getU(in,t,x,y,z,mi)[0];
-			for(a=1;a<4;a++)
-				getU(out,t,x,y,z,mi)[a] = getU(in,t,x,y,z,mi)[a]*scale;
+			getLink(out,t,x,y,z,mi)[0] = getLink(in,t,x,y,z,mi)[0];
+			for(a=1;a<=3;a++)
+				getLink(out,t,x,y,z,mi)[a] = getLink(in,t,x,y,z,mi)[a]*scale;
 		}
 	}}}}
 }
 
-void reescaleLinks(LatticeSU2 * out , LatticeSU2 * in, double scale){
+void reescaleLinks(LatticeLinkSU2 * out , LatticeLinkSU2 * in, double scale){
 	int t,x,y,z,mi,a;
 	for(t=0 ; t<out->Nt ; t++){
 	for(x=0 ; x<out->N ; x++){
 	for(y=0 ; y<out->N ; y++){
 	for(z=0 ; z<out->N ; z++){
 		for(mi=0 ; mi<4 ; mi++){
-			getU(out,t,x,y,z,mi)[0] = getU(in,t,x,y,z,mi)[0]*scale;
+			getLink(out,t,x,y,z,mi)[0] = getLink(in,t,x,y,z,mi)[0]*scale;
 		}
 	}}}}
 }
 
-double compareVectorToPW(double * eigenvector, double pPW){
+double compareVectorToPW(LatticeColorVectorReal * eigenvector, double pPW){
 		double totalsum = 0e0;
 		double complex fouriersum = 0e0;
 		double complex pPW2ipi = -2*M_PI*I*pPW;
@@ -549,17 +593,17 @@ double compareVectorToPW(double * eigenvector, double pPW){
 		for(b=0;b<3;b++){
 			for(mu=0;mu<4;mu++){
 				fouriersum=0;
-				for(x[0]=0;x[0]<Nt;x[0]++){
-				for(x[1]=0;x[1]<N;x[1]++){
-				for(x[2]=0;x[2]<N;x[2]++){
-				for(x[3]=0;x[3]<N;x[3]++){
-								fouriersum += *getelvr(eigenvector,b,x[0],x[1],x[2],x[3])*cexp(pPW2ipi*x[mu]) ;
+				for(x[0]=0;x[0]<eigenvector->Nt;x[0]++){
+				for(x[1]=0;x[1]<eigenvector->N;x[1]++){
+				for(x[2]=0;x[2]<eigenvector->N;x[2]++){
+				for(x[3]=0;x[3]<eigenvector->N;x[3]++){
+					fouriersum += *getLatticeColorVectorReal(eigenvector,b,x[0],x[1],x[2],x[3])*cexp(pPW2ipi*x[mu]) ;
 				}}}}
 				totalsum += pow( cabs(fouriersum),2 );
 			}
 		}
 
-		return(totalsum/(3.0*4.0*totalV));
+		return(totalsum/(4.0*eigenvector->dimVector));
 }
 
 /*
@@ -580,7 +624,7 @@ double zeroMomentumTransform(double * vector){
 	return(fouriersum/(3e0*totalV));
 }*/
 
-int isLatticeUnitary(LatticeSU2 * lattice){
+int isLatticeUnitary(LatticeLinkSU2 * lattice){
 	int t,x,y,z,mi,i;
 	double * aux_link;
 	double norm;
@@ -589,7 +633,7 @@ int isLatticeUnitary(LatticeSU2 * lattice){
 	for(y=0 ; y<lattice->N ; y++){
 	for(z=0 ; z<lattice->N ; z++){
 		for(mi=0 ; mi<4; mi++){
-			if( !(fabs(detv(getU(lattice,t,x,y,z,mi))-1e0) < 1e-4) ){
+			if( !(fabs(detv(getLink(lattice,t,x,y,z,mi))-1e0) < 1e-4) ){
 				printf("\n Lattice is not unitarized.");
 				return(0);
 			}
@@ -608,10 +652,10 @@ int isLinkUnitary(double * link){
 	return(0);
 }
 
-int isLatticeNaN(LatticeSU2 * lattice){
+int isLatticeNaN(LatticeLinkSU2 * lattice){
 	int i;
 	for(i=0;i<lattice->dimLattice;i++){
-		if( isnan(lattice->U[dimLattice]) ){
+		if( isnan(lattice->U[i]) ){
 			//printf("\n WARNING! LATTICE IS NAN!\n");
 			return(1);
 		}
@@ -647,15 +691,67 @@ void printpos(double t, double x, double y , double z, double mi){
 	printf("\n %lf | %lf | %lf | %lf | %lf \n",t,x,y,z,mi);
 }
 
-LatticeSU2* newLatticeSU2(int _N, int _Nt) {    // emulates a constructor for lattice object 
-    LatticeSU2* lattice_out = malloc(sizeof(LatticeSU2));
-    lattice_out->N = _N;
-    lattice_out->Nt = _Nt;
-    lattice_out->totalV = _N*_N*_N*_Nt;
-    lattice_out->N2 = _N*_N;
-    lattice_out->spatialV = _N*_N*_N;
-    lattice_out->dimLattice = totalV*4*4;
-    lattice_out->colorV = 3*totalV;
-    lattice_out->U = malloc(sizeof(double)*lattice_out->dimLattice);
-  return lattice_out;
+LatticeLinkSU2* newLatticeLinkSU2(int _N, int _Nt) {    // emulates a constructor for lattice object 
+	LatticeLinkSU2* lattice_out = malloc(sizeof(LatticeLinkSU2));
+	lattice_out->N = _N;
+	lattice_out->Nt = _Nt;
+	lattice_out->totalV = _N*_N*_N*_Nt;
+	lattice_out->N2 = _N*_N;
+	lattice_out->spatialV = _N*_N*_N;
+	lattice_out->dimLattice = totalV*4*4;
+	lattice_out->colorV = 3*totalV;
+	lattice_out->U = malloc(sizeof(double)*lattice_out->dimLattice);
+  	return lattice_out;
 }
+
+LatticeColorVectorReal* newLatticeColorVectorReal(int _N, int _Nt) {    // emulates a constructor for lattice object 
+    LatticeColorVectorReal* vector_out = malloc(sizeof(LatticeColorVectorReal));
+    vector_out->N = _N;
+    vector_out->Nt = _Nt;
+	vector_out->dimVector = _N*_N*_N*_Nt*3;
+    vector_out->vec = malloc(sizeof(double)*vector_out->dimVector);
+  return vector_out;
+}
+
+LatticeColorVectorComplex* newLatticeColorVectorComplex(int _N, int _Nt) {    // emulates a constructor for lattice object 
+    LatticeColorVectorComplex* vector_out = malloc(sizeof(LatticeColorVectorComplex));
+    vector_out->N = _N;
+    vector_out->Nt = _Nt;
+	vector_out->dimVector = _N*_N*_N*_Nt*3;
+    vector_out->vec = malloc(sizeof(double complex)*vector_out->dimVector);
+  return vector_out;
+}
+
+LatticeGaugeSU2* newLatticeGaugeSU2(int _N, int _Nt) {    // emulates a constructor for lattice object 
+	LatticeGaugeSU2 * output = malloc(sizeof(LatticeGaugeSU2));
+	output->N = _N;
+	output->N2 = _N*_N;
+	output->Nt = _Nt;
+	output->spatialV = _N*_N*_N;
+	output->totalV = spatialV*_Nt;
+	output->dimg = output->totalV*4;
+	output->g = malloc(sizeof(double)*output->dimg);
+	return output;
+}
+
+void freeLatticeLinkSU2(LatticeLinkSU2 * l) {    // emulates a constructor for lattice object 
+    free(l->U);
+	free(l);
+}
+
+void freeLatticeColorVectorReal(LatticeColorVectorReal * v) {    // emulates a constructor for lattice object 
+    free(v->vec);
+	free(v);
+}
+
+void freeLatticeColorVectorComplex(LatticeColorVectorComplex * v) {    // emulates a constructor for lattice object 
+    free(v->vec);
+	free(v);
+}
+
+void freeLatticeGaugeSU2(LatticeGaugeSU2 * l) {    // emulates a constructor for lattice object 
+    free(l->g);
+	free(l);
+}
+
+

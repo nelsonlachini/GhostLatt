@@ -100,6 +100,7 @@ void setidv(double * vector){
 	//printVector(vector);
 }
 
+
 void matrixexpv(double * vout, double * vin, int order){
 	int i,j;
 	double fat= 1E0;
@@ -226,8 +227,24 @@ void transpmr(double * Atransposed , double * A , int dim){
 void setzerovr(double * vr , int dim){
 	//dim must be the dimension of the vector vc of size (double complex)*dim
 	int i;
-	for(i=0;i<dim;i++){
-		vr[i] = 0E0;
+	for(i=0 ; i<dim ; i++){
+		vr[i] = 0e0;
+	}
+}
+
+void setzeroLatticeColorVectorReal(LatticeColorVectorReal * vr){
+	//dim must be the dimension of the vector vc of size (double complex)*dim
+	int i;
+	for(i=0 ; i<vr->dimVector ; i++){
+		vr->vec[i] = 0e0;
+	}
+}
+
+void setzeroLatticeColorVectorComplex(LatticeColorVectorComplex * vc){
+	//dim must be the dimension of the vector vc of size (double complex)*dim
+	int i;
+	for(i=0 ; i<vc->dimVector ; i++){
+		vc->vec[i] = 0e0;
 	}
 }
 
@@ -242,9 +259,36 @@ double inprodvr(double * a , double * b , int dim){
 	return(sum);
 }
 
+double inprodLatticeColorVectorReal(LatticeColorVectorReal * a , LatticeColorVectorReal * b){
+	//compute the usual inner product defined in a vetorial space of real variables
+	//returns (a,b) = a . b
+	int i;
+	double sum = 0E0;
+	for(i=0;i<a->dimVector;i++){
+		sum += a->vec[i] * b->vec[i];
+	}
+	return(sum);
+}
+
+double complex inprodLatticeColorVectorComplex(LatticeColorVectorComplex * a , LatticeColorVectorComplex * b){
+	//compute the usual inner product defined in a vetorial space of complex variables
+	//returns (a,b) = a^dag . b
+	int i;
+	double complex sum = 0E0;
+	for(i=0;i<a->dimVector;i++){
+		sum += a->vec[i] * b->vec[i];
+	}
+	return(sum);
+}
+
 double normvr(double * a , int dim){
 	//returns norm defined by inprov : |a| = sqrt(a,a)
 	return( sqrt(inprodvr(a,a,dim)) );
+}
+
+double normLatticeColorVectorReal(LatticeColorVectorReal * a){
+	//returns norm defined by inprov : |a| = sqrt(a,a)
+	return( sqrt(inprodLatticeColorVectorReal(a,a)) );
 }
 
 void cprodvr(double * vout , double k , double * v , int dim){
@@ -255,11 +299,26 @@ void cprodvr(double * vout , double k , double * v , int dim){
 	}
 }
 
+void cprodLatticeColorVectorReal(LatticeColorVectorReal * vout , double k , LatticeColorVectorReal * v){
+	int i;
+
+	for(i=0;i<v->dimVector;i++){
+		vout->vec[i] = k*v->vec[i];
+	}
+}
+
 void sumvr(double * vout , double * v1 , double * v2 , int dim){
 	int i;
 
 	for(i=0;i<dim;i++){
 		vout[i] = v1[i] + v2[i];
+	}
+}
+
+void sumLatticeColorVectorReal(LatticeColorVectorReal * vout , LatticeColorVectorReal * v1 , LatticeColorVectorReal * v2){
+	int i;
+	for(i=0;i<v1->dimVector;i++){
+		vout->vec[i] = v1->vec[i] + v2->vec[i];
 	}
 }
 
@@ -272,6 +331,15 @@ void reunitvr(double * vector, int dim){
 	}
 }
 
+void reunitLatticeColorVectorReal(LatticeColorVectorReal * vector){
+	int i;
+	double norm;
+	norm = normLatticeColorVectorReal(vector);
+	for(i=0;i<vector->dimVector;i++){
+		vector->vec[i] /= norm;
+	}
+}
+
 void mvrprod(double * vout , double * B , double * vcolumn , int dim){
 	//computes vout  <- B . Vcolumn
 	//B is a real (dim x dim) matrix
@@ -280,14 +348,14 @@ void mvrprod(double * vout , double * B , double * vcolumn , int dim){
 	int i,j;
 	double * vtemp = malloc(sizeof(double)*dim);
 
-	setzerovr(vtemp,dim);
+	setzerovr(vtemp, dim);
 	for(i=0 ; i<dim ; i++){
 		for(j=0 ; j<dim ; j++){
 			vtemp[i] +=  *getelmr(B,i,j,dim)*vcolumn[j];
 		}
 	}
 
-	copyvr(vout,vtemp,dim);
+	copyvr(vout,vtemp, dim);
 	free(vtemp);
 }
 
@@ -407,17 +475,29 @@ void vmprodr(double complex * vout , double complex* vline , double * B , int di
 
 void sumvc(double complex * vout , double complex * v1 , double complex * v2 , int dim){
 	int i;
-
 	for(i=0;i<dim;i++){
 		vout[i] = v1[i] + v2[i];
 	}
 }
 
+void sumLatticeColorVectorComplex(LatticeColorVectorComplex * vout , LatticeColorVectorComplex * v1 , LatticeColorVectorComplex * v2){
+	int i;
+	for(i=0;i<vout->dimVector;i++){
+		vout->vec[i] = v1->vec[i] + v2->vec[i];
+	}
+}
+
 void cprodvc(double complex * vout , double complex k , double complex * v , int dim){
 	int i;
-
 	for(i=0;i<dim;i++){
 		vout[i] = k*v[i];
+	}
+}
+
+void cprodLatticeColorVectorComplex(LatticeColorVectorComplex * vout , double complex k , LatticeColorVectorComplex * v){
+	int i;
+	for(i=0;i<vout->dimVector;i++){
+		vout->vec[i] = k*v->vec[i];
 	}
 }
 
@@ -472,12 +552,26 @@ double normvc(double complex * a , int dim){
 	return( creal(sqrt(inprodvc(a,a,dim))) );
 }
 
+double normLatticeColorVectorComplex(LatticeColorVectorComplex * a){
+	//returns norm defined by inprovc : |a| = sqrt(a,a)
+	return( creal(sqrt(inprodLatticeColorVectorComplex(a,a))) );
+}
+
 void reunitvc(double complex * vector, int dim){
 	int i;
 	double norm;
 	norm = normvc(vector, dim);
 	for(i=0;i<dim;i++){
 		vector[i] /= norm;
+	}
+}
+
+void reunitLatticeColorVectorComplex(LatticeColorVectorComplex * vector){
+	int i;
+	double norm;
+	norm = normLatticeColorVectorComplex(vector);
+	for(i=0;i<vector->dimVector;i++){
+		vector->vec[i] /= norm;
 	}
 }
 
@@ -530,7 +624,7 @@ double complex det2mc(double complex * v){
 }
 
 /////////////////////////////// LINEAR SYSTEMS ALGORITHMS
-
+/*
 void bicgmr(double complex * x , double * A , double complex * b , int dim){
 	//algorithm based on Numerical Recipes book
 	//linear system A . x = b
@@ -703,7 +797,7 @@ void cgmr(double * x , double * A , double * b , int dim){
 	cprodvr(auxv , -1.0 , auxv , dim);
 	sumvr(r , b , auxv , dim);				//r <- b - A.x
 
-	copyvr(p , r,dim);						//p <- r
+	copyvr(p , r);						//p <- r
 
 	printf("|r| = %.2E\n",normvr(r,dim));
 	while( (normvr(r,dim) > tol) ){			//while( |r| < tol )
@@ -797,7 +891,7 @@ void cgmc(double complex * x , double complex * A , double complex * b , int dim
 	free(p);
 	free(auxv);
 }
-
+*/
 ///////////////////////////////
 
 void setzeroqvector(int * v){
@@ -832,6 +926,14 @@ void setonevc(double complex * vc,int dim){
 	}
 }
 
+void setoneLatticeColorVectorComplex(LatticeColorVectorComplex * vc){
+	//set all elements of complex vector to unity
+	int i;
+	for(i=0;i<vc->dimVector;i++){
+		vc->vec[i] = 1e0;
+	}
+}
+
 void setrandomvc(double complex * vc,int dim){
 	//set all elements of complex vector to a random number
 	int i;
@@ -848,78 +950,77 @@ void setonevr(double * vr,int dim){
 	}
 }
 
-void setplanewave(double complex * target, double * p , int atarget){
+void setoneLatticeColorVectorReal(LatticeColorVectorReal * vr){
+	//set all elements of complex vector to unity
+	int i;
+	for(i=0 ; i<vr->dimVector ; i++){
+		vr->vec[i] = 1e0;
+	}
+}
+
+void setplanewaveLatticeColorVectorComplex(LatticeColorVectorComplex * target, double * p , int atarget){
 	//set target vector to plane wave to exp(-2*pi*i*(p.x)) within
 	//the subspace of a==atarget and zero to the remaining
 	int a,t,x,y,z;
 	for(a=1;a<4;a++){
-		for(t=0;t<Nt;t++){
-			for(x=0;x<N;x++){
-				for(y=0;y<N;y++){
-					for(z=0;z<N;z++){
-						if(a==atarget){
-							// need to correct getelvc for a = 1,2,3 instead a = 0,1,2
-							*getelvc(target,a-1,t,x,y,z) = cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) );
-						}
-						else{
-							*getelvc(target,a-1,t,x,y,z) = 0E0;
-						}
-					}
-				}
+		for(t=0;t<target->Nt;t++){
+		for(x=0;x<target->N;x++){
+		for(y=0;y<target->N;y++){
+		for(z=0;z<target->N;z++){
+			if(a==atarget){
+				// need to correct getelvc for a = 1,2,3 instead a = 0,1,2
+				*getLatticeColorVectorComplex(target,a-1,t,x,y,z) = cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) );
 			}
-		}
+			else{
+				*getLatticeColorVectorComplex(target,a-1,t,x,y,z) = 0e0;
+			}
+		}}}}
 	}
 }
 
-void setplanewaveallcolors(double complex * target, double * p ){
+void setplanewaveallcolorsLatticeColorVectorComplex(LatticeColorVectorComplex * target, double * p ){
 	//set target vector to plane wave to exp(-2*pi*i*(p.x)) within
 	//the subspace of a==atarget and zero to the remaining
 	int a,t,x,y,z;
 	for(a=1;a<=3;a++){
-		for(t=0;t<Nt;t++){
-			for(x=0;x<N;x++){
-				for(y=0;y<N;y++){
-					for(z=0;z<N;z++){
-							*getelvc(target,a-1,t,x,y,z) = cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) );
-					}
-				}
-			}
-		}
+		for(t=0;t<target->Nt;t++){
+		for(x=0;x<target->N;x++){
+		for(y=0;y<target->N;y++){
+		for(z=0;z<target->N;z++){
+			*getLatticeColorVectorComplex(target,a-1,t,x,y,z) = cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) );
+		}}}}
 	}
 }
 
-void rsetplanewave(double * target, double * p , int atarget){
+void setplanewaveLatticeColorVectorReal(LatticeColorVectorReal * target, double * p , int atarget){
 	//set target vector to plane wave to exp(-2*pi*i*(p.x)) within
 	//the subspace of a==atarget and zero to the remaining
 	int a,t,x,y,z;
 	for(a=1;a<=3;a++){
-		for(t=0;t<Nt;t++){
-			for(x=0;x<N;x++){
-				for(y=0;y<N;y++){
-					for(z=0;z<N;z++){
-						if(a==atarget){
-							*getelvr(target,a-1,t,x,y,z) = creal(cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) ));
-						}
-						else{
-							*getelvr(target,a-1,t,x,y,z) = 0E0;
-						}
-					}
-				}
+		for(t=0;t<target->Nt;t++){
+		for(x=0;x<target->N;x++){
+		for(y=0;y<target->N;y++){
+		for(z=0;z<target->N;z++){
+			if(a==atarget){
+				*getLatticeColorVectorReal(target,a-1,t,x,y,z) = creal(cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) ));
 			}
-		}
+			else{
+				*getLatticeColorVectorReal(target,a-1,t,x,y,z) = 0e0;
+			}
+		}}}}
 	}
 }
 
-void rsetplanewaveallcolors(double * target, double * p){
+void setplanewaveallcolorsLatticeColorVectorReal(LatticeColorVectorReal * target, double * p){
 	//set target vector to plane wave to exp(-2*pi*i*(p.x)) within
 	//the subspace of a==atarget and zero to the remaining
 	int a,t,x,y,z;
 	for(a=1;a<=3;a++){
-		for(t=0;t<Nt;t++){
-			for(x=0;x<N;x++){
-				for(y=0;y<N;y++){
-					for(z=0;z<N;z++){
-							*getelvr(target,a-1,t,x,y,z) = creal(cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) ));
+		for(t=0;t<target->Nt;t++){
+			for(x=0;x<target->N;x++){
+				for(y=0;y<target->N;y++){
+					for(z=0;z<target->N;z++){
+							*getelvr(target->vec,a-1,t,x,y,z) = creal(cexp( -2.0*M_PI*I*(p[0]*t + p[1]*x + p[2]*y + p[3]*z) ));
 					}
 				}
 			}
@@ -932,6 +1033,14 @@ void setrandomvr(double * vr,int dim){
 	int i;
 	for(i=0;i<dim;i++){
 		vr[i] = ran0(global_seed)/sqrt(dim);
+	}
+}
+
+void setrandomLatticeColorVectorReal(LatticeColorVectorReal * vr){
+	//set all elements of real vector to a random number
+	int i;
+	for(i=0;i<vr->dimVector;i++){
+		vr->vec[i] = ran0(global_seed)/sqrt(vr->dimVector);
 	}
 }
 

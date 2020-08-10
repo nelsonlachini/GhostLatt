@@ -52,30 +52,30 @@ void constructD(double * lattice, double * D, int t, int x, int y, int z){
 			/*
 			if(i==0 && j==0){
 				for(mu=0;mu<4;mu++){
-					setquadv(&emu[0],mu);
+					setUnitVector(&emu[0],mu);
 					//D00 case
-					*(D+4*i+j) += getU(lattice,t,x,y,z,mu)[0]*getU(lattice,t,x,y,z,mu)[0];
-					*(D+4*i+j) += getU(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[0]
-					*getU(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[0];
+					*(D+4*i+j) += getLink(lattice,t,x,y,z,mu)[0]*getLink(lattice,t,x,y,z,mu)[0];
+					*(D+4*i+j) += getLink(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[0]
+					*getLink(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[0];
 				}
 			}
 			else */
 			if( ((i!=0) && (j!=0)) || ((i==0) && (j==0)) ){
 				for(mu=0;mu<4;mu++){
-					setquadv(&emu[0],mu);
+					setUnitVector(&emu[0],mu);
 					//Dij, i,j=1,2,3 cases or both 0
-					*(D+4*i+j) += getU(lattice,t,x,y,z,mu)[i]*getU(lattice,t,x,y,z,mu)[j];
-					*(D+4*i+j) += getU(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[i]
-					*getU(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[j];
+					*(D+4*i+j) += getLink(lattice,t,x,y,z,mu)[i]*getLink(lattice,t,x,y,z,mu)[j];
+					*(D+4*i+j) += getLink(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[i]
+					*getLink(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[j];
 				}
 			}
 			else{
 				for(mu=0;mu<4;mu++){
-					setquadv(&emu[0],mu);
+					setUnitVector(&emu[0],mu);
 					//D0i or Di0 cases
-					*(D+4*i+j) += -getU(lattice,t,x,y,z,mu)[0]*getU(lattice,t,x,y,z,mu)[i+j];	//attention for the change of sign due to notation!
-					*(D+4*i+j) += getU(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[0]
-					*getU(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[i+j];
+					*(D+4*i+j) += -getLink(lattice,t,x,y,z,mu)[0]*getLink(lattice,t,x,y,z,mu)[i+j];	//attention for the change of sign due to notation!
+					*(D+4*i+j) += getLink(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[0]
+					*getLink(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)[i+j];
 				}
 			}
 		}
@@ -104,13 +104,13 @@ double directMCGOverrelaxationSweep(double * lattice, double * g, double omega){
 					reunitv(getg(g,t,x,y,z));
 
 					for(mu=0;mu<4;mu++){
-						setquadv(&emu[0],mu);
+						setUnitVector(&emu[0],mu);
 
-						mmprodv(getU(lattice,t,x,y,z,mu) , getg(g,t,x,y,z) , getU(lattice,t,x,y,z,mu));
+						mmprodv(getLink(lattice,t,x,y,z,mu) , getg(g,t,x,y,z) , getLink(lattice,t,x,y,z,mu));
 
 						hermcv(aux1, getg(g,t,x,y,z));
-						mmprodv(getU(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)
-						, getU(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu) , aux1);
+						mmprodv(getLink(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)
+						, getLink(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu) , aux1);
 					}
 
 				}
@@ -144,13 +144,13 @@ double directMCGStochasticSweep(double * lattice, double * g, double p_stoch){
 
 
 					for(mu=0;mu<4;mu++){
-						setquadv(&emu[0],mu);
+						setUnitVector(&emu[0],mu);
 
-						mmprodv(getU(lattice,t,x,y,z,mu) , getg(g,t,x,y,z) , getU(lattice,t,x,y,z,mu));
+						mmprodv(getLink(lattice,t,x,y,z,mu) , getg(g,t,x,y,z) , getLink(lattice,t,x,y,z,mu));
 
 						hermcv(aux1, getg(g,t,x,y,z));
-						mmprodv(getU(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)
-						, getU(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu) , aux1);
+						mmprodv(getLink(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu)
+						, getLink(lattice,getStepT(t,-emu[0]),getStep(x,-emu[1]),getStep(y,-emu[2]),getStep(z,-emu[3]),mu) , aux1);
 					}
 
 				}
@@ -169,7 +169,7 @@ double calcR(double * lattice){
 			for(y=0;y<N;y++){
 				for(z=0;z<N;z++){
 					for(mu=0;mu<4;mu++){
-						R += getU(lattice,t,x,y,z,mu)[0]*getU(lattice,t,x,y,z,mu)[0];
+						R += getLink(lattice,t,x,y,z,mu)[0]*getLink(lattice,t,x,y,z,mu)[0];
 					}
 				}
 			}
@@ -189,11 +189,11 @@ void centerProjection(double * vortexlattice, double * MCGlattice){
 			for(y=0;y<N;y++){
 				for(z=0;z<N;z++){
 					for(mu=0;mu<4;mu++){
-						getU(vortexlattice,t,x,y,z,mu)[0] = getSignal(getU(MCGlattice,t,x,y,z,mu)[0]);
-						if(getU(vortexlattice,t,x,y,z,mu)[0] == 1){
+						getLink(vortexlattice,t,x,y,z,mu)[0] = getSignal(getLink(MCGlattice,t,x,y,z,mu)[0]);
+						if(getLink(vortexlattice,t,x,y,z,mu)[0] == 1){
 							contnv++;
 						}
-						else if(getU(vortexlattice,t,x,y,z,mu)[0] == -1){
+						else if(getLink(vortexlattice,t,x,y,z,mu)[0] == -1){
 							contv++;
 						}
 					}
@@ -212,14 +212,14 @@ void centerRemoval(double * MCGlattice, double * vortexlattice){
 			for(y=0;y<N;y++){
 				for(z=0;z<N;z++){
 					for(mu=0;mu<4;mu++){
-						//if( getU(vortexlattice,t,x,y,z,mu)[0] == -1 )
-							//printm(getU(vortexlattice,t,x,y,z,mu));
-							//printm(getU(MCGlattice,t,x,y,z,mu));
-							mmprodv(getU(MCGlattice,t,x,y,z,mu), getU(vortexlattice,t,x,y,z,mu), getU(MCGlattice,t,x,y,z,mu));
-							//printm(getU(MCGlattice,t,x,y,z,mu));
+						//if( getLink(vortexlattice,t,x,y,z,mu)[0] == -1 )
+							//printm(getLink(vortexlattice,t,x,y,z,mu));
+							//printm(getLink(MCGlattice,t,x,y,z,mu));
+							mmprodv(getLink(MCGlattice,t,x,y,z,mu), getLink(vortexlattice,t,x,y,z,mu), getLink(MCGlattice,t,x,y,z,mu));
+							//printm(getLink(MCGlattice,t,x,y,z,mu));
 							//getchar();
-							//cmprodv(getU(MCGlattice,t,x,y,z,mu),  getU(vortexlattice,t,x,y,z,mu)[0], getU(MCGlattice,t,x,y,z,mu));
-						//printf("\n%d",getSignal(getU(fulllattice,t,x,y,z,mu)[0]));
+							//cmprodv(getLink(MCGlattice,t,x,y,z,mu),  getLink(vortexlattice,t,x,y,z,mu)[0], getLink(MCGlattice,t,x,y,z,mu));
+						//printf("\n%d",getSignal(getLink(fulllattice,t,x,y,z,mu)[0]));
 					}
 				}
 			}
@@ -232,8 +232,8 @@ double MCGOver(double * outlattice, double * inlattice, /* double * g, */ double
 	int i;
 	double deltaR;
 	double * g = malloc(sizeof(double)*totalV*4);
-	initg(g);
-	copyl(outlattice,inlattice);
+	setidLatticeGaugeSU2(g);
+	copyLatticeLinkSU2(outlattice,inlattice);
 	printf("\n MCG gauge-fixing:");
 	printf("\n|deltaR|=%.2e ",fabs(deltaR));
 	do{
@@ -254,8 +254,8 @@ double MCGStoch(double * outlattice, double * inlattice, /* double * g, */ doubl
 	int i;
 	double deltaR;
 	double * g = malloc(sizeof(double)*totalV*4);
-	initg(g);
-	copyl(outlattice,inlattice);
+	setidLatticeGaugeSU2(g);
+	copyLatticeLinkSU2(outlattice,inlattice);
 	printf("\n MCG gauge-fixing:");
 	printf("\n|deltaR|=%.2e ",fabs(deltaR));
 	do{

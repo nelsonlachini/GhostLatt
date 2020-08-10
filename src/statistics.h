@@ -18,7 +18,7 @@ double naive_sampleVar(double * dataSet, int dim);
 
 int sortInt(int i , int j);
 
-void plaquetteHistogram(double * histo, LatticeSU2 * lattice, int nbins);
+void plaquetteHistogram(double * histo, LatticeLinkSU2 * lattice, int nbins);
 
 void bootstrapSimple(double * output, double * data, int n, int m, int K);
 
@@ -51,11 +51,10 @@ void svdcmp(double **a, int m, int n, double w[], double **v);
 
 double pythag(double a, double b);
 
-
 void svdfit(double x[], double y[], double sig[], int ndata, double a[],
      int ma, double **u, double **v, double w[], double *chisq,
         void (*funcs)(double, double [], int));
 //data blocking
-double dataBlockingOnlyDivisors(double * data, int dim);
+void dataBlockingOnlyDivisors(double * data, int dim);
 
 #endif

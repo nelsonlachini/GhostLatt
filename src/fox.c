@@ -200,12 +200,12 @@ void foxInstanton(double * U , double R, double x0 , int M){
 			for(y=0 ; y<N ; y++){
 				for(z=0 ; z<N ; z++){
 					for(mu=0 ; mu<4 ; mu++){
-						setquadv(&ami[0],mu);
+						setUnitVector(&ami[0],mu);
 
 						if( isoutside(t,x,y,z,x0,M) && isoutside(getStep(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]),x0,M) ){
 							//outside
 							umusingVFox(auxu,t,x,y,z,mu,x0,R);
-							copyv( getU(U,t,x,y,z,mu) , auxu);
+							copyv( getLink(U,t,x,y,z,mu) , auxu);
 						}
 						else{
 							//inside
@@ -222,14 +222,14 @@ void foxInstanton(double * U , double R, double x0 , int M){
 								creategFoxV(auxg,getStep(t,ami[0]),getStep(x,ami[1]),getStep(y,ami[2]),getStep(z,ami[3]),x0);
 								mmprodv(auxu,auxu,auxg);
 							}
-							copyv( getU(U,t,x,y,z,mu) , auxu);
+							copyv( getLink(U,t,x,y,z,mu) , auxu);
 							//printf("\n Hey, I'm here!!");
 							//printpos(t,x,y,z,mu);
 							//printc(isoutside(0,0,1,0,x0,M));
 							//getchar();
 						}
 
-						if(isnan(detv(getU(U,t,x,y,z,mu)))){
+						if(isnan(detv(getLink(U,t,x,y,z,mu)))){
 							printpos(t,x,y,z,mu);
 
 							getchar();

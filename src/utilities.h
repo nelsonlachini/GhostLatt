@@ -28,11 +28,11 @@ void printm(double * A);
 
 void fprintm(FILE * file , double * A);
 
-double * getU(LatticeSU2 * lattice, int t , int x , int y, int z , int mi);
+double * getLink(LatticeLinkSU2 * lattice, int t , int x , int y, int z , int mi);
 
-double * getUdim(LatticeSU2 * lattice, int t , int x , int y, int z , int mi, int N);
+double * getLinkdim(LatticeLinkSU2 * lattice, int t , int x , int y, int z , int mi, int N);
 
-void printLattice(LatticeSU2 * lattice);
+void printLattice(LatticeLinkSU2 * lattice);
 
 void copyv(double * out , double * in);
 
@@ -46,9 +46,15 @@ void printmr(double * A , int dim);
 
 void copymr(double * Mout , double * Min , int dim);
 
-void copyvr(double * vout, double * vin , int dim);
+void copyvr(double * vout, double * vin, int dim);
+
+void copyLatticeColorVectorReal(LatticeColorVectorReal * vout, LatticeColorVectorReal * vin);
+
+void copyLatticeColorVectorComplex(LatticeColorVectorComplex * vout, LatticeColorVectorComplex * vin);
 
 double * getelvr(double * vr , int a , int t , int x , int y , int z);
+
+double * getLatticeColorVectorReal(LatticeColorVectorReal * vr , int a , int t , int x , int y , int z);
 
 void printvr(double * V , int dim);
 
@@ -66,15 +72,17 @@ void printmc(double complex * A , int dim);
 
 double complex * getelvc(double complex * vc , int a , int t , int x , int y , int z);
 
+double complex * getLatticeColorVectorComplex(LatticeColorVectorComplex * vc , int a , int t , int x , int y , int z);
+
 void converttov(double * vout, double complex * vin);
 
 ////////////////////////////// OTHER STUFF
 
-void setquadv(int * amu, int mu);
+void setUnitVector(int * amu, int mu);
 
-void initl(LatticeSU2 * lattice , float parameter);
+void initl(LatticeLinkSU2 * lattice , float parameter);
 
-void reunitl(LatticeSU2 * lattice);
+void reunitLatticeLinkSU2(LatticeLinkSU2 * lattice);
 
 void reunitv(double * vector);
 
@@ -84,9 +92,9 @@ double getStep( double coord , double dcoord );
 
 double getStepT( double coord , double dcoord );
 
-void copyl(LatticeSU2 * Lout , LatticeSU2 * Lin);
+void copyLatticeLinkSU2(LatticeLinkSU2 * Lout , LatticeLinkSU2 * Lin);
 
-double * getg(double * g, int t , int x , int y, int z);
+double * getg(LatticeGaugeSU2 * g, int t , int x , int y, int z);
 
 void printvcbycolor(double complex * v, int a);
 
@@ -94,39 +102,41 @@ void tseed();
 
 void progress_panel(int i, int total);
 
-void save_lattice(LatticeSU2 * lattice, char * file_name);
+void saveLatticeLinkSU2(LatticeLinkSU2 * lattice, char * file_name);
 
-void save_vector(double complex * vector, char * file_name);
+void saveLatticeColorVectorComplex(LatticeColorVectorComplex * vector, char * file_name);
 
-void save_rvector(double * vector, char * file_name);
+void saveLatticeColorVectorReal(LatticeColorVectorReal * vector, char * file_name);
 
 void getName(char * out, char * header , double num);
 
-void load_lattice(LatticeSU2 * lattice , char * file_name);
+void loadLatticeLinkSU2(LatticeLinkSU2 * lattice , char * file_name);
 
-void load_rvector(double * vector , char * file_name);
+void loadLatticeColorVectorReal(LatticeColorVectorReal * vector , char * file_name);
+
+void loadLatticeColorVectorComplex(LatticeColorVectorComplex * vector , char * file_name);
 
 int compareLink(double * link1, double * link2);
 
-int compareLattice(LatticeSU2 * lattice1, LatticeSU2 * lattice2);
+int compareLattice(LatticeLinkSU2 * lattice1, LatticeLinkSU2 * lattice2);
 
-int comparevc(double complex * v1, double complex * v2, int dim);
+int compareLatticeColorVectorComplex(LatticeColorVectorComplex * v1, LatticeColorVectorComplex * v2);
 
-int comparevr(double * v1, double * v2, int dim);
+int compareLatticeColorVectorReal(LatticeColorVectorReal * v1, LatticeColorVectorReal * v2);
 
-void reescaleGaugeField(LatticeSU2 * out, LatticeSU2 * in, double scale);
+void reescaleGaugeField(LatticeLinkSU2 * out, LatticeLinkSU2 * in, double scale);
 
-void reescaleLinks(LatticeSU2 * out, LatticeSU2 * in, double scale);
+void reescaleLinks(LatticeLinkSU2 * out, LatticeLinkSU2 * in, double scale);
 
-double compareVectorToPW(double * eigenvector, double pPW);
+double compareVectorToPW(LatticeColorVectorReal * eigenvector, double pPW);
 
 double zeroMomentumTransform(double * vector);
 
-int isLatticeUnitary(LatticeSU2 * lattice);
+int isLatticeUnitary(LatticeLinkSU2 * lattice);
 
 int isLinkUnitary(double * link);
 
-int isLatticeNaN(LatticeSU2 * lattice);
+int isLatticeNaN(LatticeLinkSU2 * lattice);
 
 double max(double * array, int dim);
 
@@ -136,6 +146,14 @@ double sortDouble(double i , double j);
 
 void printpos(double t, double x, double y , double z, double mi);
 
-LatticeSU2* newLatticeSU2(int _N, int _Nt);
+LatticeLinkSU2* newLatticeLinkSU2(int _N, int _Nt);
+LatticeColorVectorReal* newLatticeColorVectorReal(int _N, int _Nt);
+LatticeColorVectorComplex* newLatticeColorVectorComplex(int _N, int _Nt);
+LatticeGaugeSU2* newLatticeGaugeSU2(int _N, int _Nt);
+
+void freeLatticeLinkSU2(LatticeLinkSU2 * l);
+void freeLatticeColorVectorReal(LatticeColorVectorReal * v);
+void freeLatticeColorVectorComplex(LatticeColorVectorComplex * v);
+void freeLatticeGaugeSU2(LatticeGaugeSU2 * l);
 
 #endif

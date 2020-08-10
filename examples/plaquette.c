@@ -31,7 +31,7 @@ int main(){
     int N_hb 	= 1;		        // #heat-bath steps per sweep
     int N_mic 	= N/2;	            // #overrelaxation steps per sweep
 
-    LatticeSU2 * lattice = newLatticeSU2(N,Nt); 
+    LatticeLinkSU2 * lattice = newLatticeLinkSU2(N,Nt); 
 
     initl(lattice , initial_order);			//initialize the lattice
 

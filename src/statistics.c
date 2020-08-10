@@ -26,7 +26,7 @@ int sortInt(int i , int j){
     return((int)(ran0(global_seed)*(j-i) + i));
 }
 
-void plaquetteHistogram(double * histo, LatticeSU2 * lattice, int nbins){
+void plaquetteHistogram(double * histo, LatticeLinkSU2 * lattice, int nbins){
     //return histogram of plaquette values (-1,1) in a given lattice configuration
 
     int ibin;
@@ -46,33 +46,33 @@ void plaquetteHistogram(double * histo, LatticeSU2 * lattice, int nbins){
             for(y=0 ; y<N ;y++){
                 for(z=0 ; z<N ; z++){
                     for(ni=0 ; ni<3 ; ni++){
-                        setquadv(&ani[0],ni);
+                        setUnitVector(&ani[0],ni);
                         for(mi=ni+1 ; mi<4 ; mi++){
-                            setquadv(&ami[0],mi);
+                            setUnitVector(&ami[0],mi);
                             k=0;
                             j=0;
                             setidv(aux);
 
                             for(k=0 ; k<X ; k++){
-								mmprodv(aux, aux, getU(lattice, (t+k*ami[0])%Nt , (x+k*ami[1])%N , (y+k*ami[2])%N , (z+k*ami[3])%N ,mi) );
+								mmprodv(aux, aux, getLink(lattice, (t+k*ami[0])%Nt , (x+k*ami[1])%N , (y+k*ami[2])%N , (z+k*ami[3])%N ,mi) );
 							}
 							k--;
 
                             for(j=0 ; j<Y ; j++){
-								mmprodv(aux , aux , getU(lattice, (t+(k+1)*ami[0] + j*ani[0])%Nt , (x+(k+1)*ami[1]+ j*ani[1])%N ,
+								mmprodv(aux , aux , getLink(lattice, (t+(k+1)*ami[0] + j*ani[0])%Nt , (x+(k+1)*ami[1]+ j*ani[1])%N ,
 										(y+(k+1)*ami[2]+ j*ani[2])%N , (z+(k+1)*ami[3]+ j*ani[3])%N , ni) );
 							}
 							j--;
 
                             for( ; k > -1 ; k--){
-								hermcv( auxc , getU(lattice, (t+k*ami[0] + (j+1)*ani[0])%Nt , (x+k*ami[1]+ (j+1)*ani[1])%N ,
+								hermcv( auxc , getLink(lattice, (t+k*ami[0] + (j+1)*ani[0])%Nt , (x+k*ami[1]+ (j+1)*ani[1])%N ,
 									(y+k*ami[2]+ (j+1)*ani[2])%N , (z+k*ami[3]+ (j+1)*ani[3])%N , mi ) );
 								mmprodv(aux, aux , auxc);
 							}
 							k++;
 
 							for( ; j > -1 ; j--){
-								hermcv( auxc , getU(lattice, (t+ j*ani[0])%Nt , (x+ j*ani[1])%N ,
+								hermcv( auxc , getLink(lattice, (t+ j*ani[0])%Nt , (x+ j*ani[1])%N ,
 									(y+ j*ani[2])%N , (z+ j*ani[3])%N , ni ) );
 								mmprodv(aux , aux , auxc);
 							}
@@ -740,7 +740,7 @@ void svdfit(double x[], double y[], double sig[], int ndata, double a[],
 }
 
 //data blocking
-double dataBlockingOnlyDivisors(double * data, int dim){
+void dataBlockingOnlyDivisors(double * data, int dim){
     FILE * b;
     int i, binsize, nbins, ibin;
     int divisorsCount=0;

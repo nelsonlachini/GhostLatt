@@ -4,22 +4,22 @@
 #include "algebra.h"
 #include "global.h"
 
-double wilsonLoopMeasureSym(LatticeSU2 * lattice , int X, int Y);
+double wilsonLoopMeasureSym(LatticeLinkSU2 * lattice , int X, int Y);
 
-double wilsonLoopMeasureAsym(LatticeSU2 * lattice , int R, int T);
+double wilsonLoopMeasureAsym(LatticeLinkSU2 * lattice , int R, int T);
 
-double polyakovLoopMeasure(LatticeSU2 * lattice);
+double polyakovLoopMeasure(LatticeLinkSU2 * lattice);
 
-double gluonP(LatticeSU2 * lattice, double kz);
+double gluonP(LatticeLinkSU2 * lattice, double kz);
 
-double measure_ghostp(LatticeSU2 * lattice, double *** G, double * kz, int kSize, int j_Ncf);
+double measure_ghostp(LatticeLinkSU2 * lattice, double *** G, double * kz, int kSize, int j_Ncf);
 
-double measure_gluonp(LatticeSU2 * lattice, double *** D, double * kz, int kSize, int j_Ncf);
+double measure_gluonp(LatticeLinkSU2 * lattice, double *** D, double * kz, int kSize, int j_Ncf);
 
-void updateStapleMeasurement(LatticeSU2 * lattice , int t, int x, int y, int z, int mi , double * _staple);
+void updateStapleMeasurement(LatticeLinkSU2 * lattice , int t, int x, int y, int z, int mi , double * _staple);
 
-void spatialSmearStep(LatticeSU2 * outlattice, LatticeSU2 * inlattice, double alpha_smear);
+void spatialSmearStep(LatticeLinkSU2 * outlattice, LatticeLinkSU2 * inlattice, double alpha_smear);
 
-void spatialSmearing3(LatticeSU2 * outlattice, LatticeSU2 * inlattice, int n_smear, double alpha_smear);
+void spatialSmearing3(LatticeLinkSU2 * outlattice, LatticeLinkSU2 * inlattice, int n_smear, double alpha_smear);
 
 #endif

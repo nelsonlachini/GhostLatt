@@ -9,6 +9,7 @@
 #include <src/measurement.h>
 #include <src/gaugefix.h>
 #include <src/statistics.h>
+#include <src/inverters.h>
 
 // global variables (to do: change that to local)
 const int N = 8;
@@ -20,9 +21,9 @@ const int dimLattice = totalV*4*4;
 const int colorV = totalV*3;
 const int N2 = N*N;
 
-long * global_seed;
 FILE * f;
-double THERM_TIME,FIX_TIME;
+long * global_seed;
+double THERM_TIME=0, FIX_TIME=0, CG_TIME=0;
 
 int main(){
     clock_t dtime = clock();
@@ -41,44 +42,45 @@ int main(){
     char file_name[MAXIMUM_NAME_LENGTH], aux[15];
     
     LatticeLinkSU2 * lattice = newLatticeLinkSU2(N,Nt);                     //lattice alocation
+    LatticeColorVectorReal * eigenvector_guess = newLatticeColorVectorReal(lattice->N,lattice->Nt);
 
-    initl(lattice , initial_order);                                //cold initialization
-    THERM_TIME += thermalizeLattice(lattice, beta, N_therm, N_hb, N_mic);        //thermalization sweeps
-
-    int kListSize = (int)(0.5*N); //half the lattice
-    double * kList = malloc(sizeof(double)*kListSize);
-    double ** ghostProp;
-    ghostProp = (double **)malloc(sizeof(double *)*kListSize);
-    for(i=0;i<kListSize;i++){
-        ghostProp[i] = (double *)malloc(sizeof(double)*N_cf);
-    }
+	double * lambda1 = malloc(sizeof(double)*N_cf);
 
     //uncorrelation and measurement steps
     LatticeGaugeSU2 * g = newLatticeGaugeSU2(lattice->N,lattice->Nt);   //allocating gauge transformation
-    setidLatticeGaugeSU2(g);                                            //initializing gauge transformation
-    double e2tol = 1e-14;                                               // gauge fixing precision
-    double p_stoch = 0.8;   //= calibrate_stoc(lattice , 1e-10);    // choosing or calibrating gauge fixing parameter
+    setidLatticeGaugeSU2(g);                                       //initializing gauge transformation
 
+    double e2tol = 1e-14, r_CG=0, eigen_tol=1e-6 , cg_tol=1e-10;                           // gauge fixing precision
+    int iCG;
+    double p_stoch = 0.8; //= calibrate_stoc(lattice , 1e-10);    // choosing or calibrating gauge fixing parameter
+    
+    double pmin[4] = {0e0,0e0,0e0,1e0/lattice->N};
+
+    initl(lattice , initial_order);                                              //cold initialization
+    THERM_TIME += thermalizeLattice(lattice, beta, N_therm, N_hb, N_mic);        //thermalization sweeps
+
+    //measurements on the go
     for(i=0;i<N_cf;i++){
         printf("\n########## Measurement step %d\n",i);
-        THERM_TIME += thermalizeLattice(lattice, beta, N_cor, N_hb, N_mic);    //N_cor uncorrelation steps of HOR type
+        THERM_TIME += thermalizeLattice(lattice, beta, N_cor, N_hb, N_mic);      //N_cor uncorrelation steps of HOR type
 
         FIX_TIME += fixLatticeStoch(lattice, lattice, g, p_stoch, e2tol);
 
-        printf("\nMeasurements:");
-        measure_ghostp(lattice, &ghostProp , kList, kListSize, i);
+        printf("\nPower Method execution:");
+        setplanewaveallcolorsLatticeColorVectorReal(eigenvector_guess, pmin);
+        // compute smallest eigenvalue and eigenvector (output in 2nd and 3rd arguments)
+		CG_TIME += rsmallest_eigen_cg(lattice, &lambda1[i], eigenvector_guess, eigen_tol , eigenvector_guess, &r_CG , &iCG, cg_tol);
     }
 
+    double lambda_Lap = 4*pow(sin(M_PI/lattice->N),2);
     //bootstrap analysis
-    double ** ghostPropBoot = malloc(sizeof(double *)*kListSize);
-    for(i=0;i<kListSize;i++){
-        ghostPropBoot[i] = malloc(sizeof(double)*2);
-        bootstrapSimple(ghostPropBoot[i], ghostProp[i], N_cf, N_cf, N_bootstrap);
-        printf("\nG(%.3lf)=%lf+-%lf" , kList[i] , ghostPropBoot[i][0] , ghostPropBoot[i][1]);
-    }
+    double lambda1Boot[2];
+    bootstrapSimple(&lambda1Boot[0], &lambda1[0], N_cf, N_cf, N_bootstrap);
+    printf("\nlambda_1=%lf+-%lf" , lambda1Boot[0] , lambda1Boot[1]);
+    printf("\nlambda_1/lambda_Lap=%lf+-%lf" , lambda1Boot[0]/lambda_Lap , lambda1Boot[1]/lambda_Lap);
 
     ////////////////////////////////PRINTING DATA
-    sprintf(file_name,"%s","ghostPropagator");
+    sprintf(file_name,"%s","smallestEigenFP");
     sprintf(aux, "_N%d", N);
     strcat(file_name, aux);
     sprintf(aux, "_B%.2f", beta);
@@ -94,25 +96,24 @@ int main(){
     fprintf(f, "#N_hb = %d\n", N_hb);
     fprintf(f, "#N_mic = %d\n", N_mic);
 	fprintf(f, "#INITIAL ORDER OF LINKS = %.2lf\n" , initial_order);
+    fprintf(f, "#THERM_TIME: %.2lf hrs\n", THERM_TIME/3600.0);
+    fprintf(f, "#FIX_TIME: %.2lf hrs\n", FIX_TIME/3600.0);
+    fprintf(f, "#CG_TIME: %.2lf hrs\n", CG_TIME/3600.0);
 	fprintf(f, "#TOTAL EXECUTION TIME: %.2lf hrs\n", ((double)(clock() - dtime))/(CLOCKS_PER_SEC*3600.0));
     fprintf(f,"#####################PROPAGATOR SECTION#######################\n");
-    fprintf(f,"#k/N , Lattice momentum , D(k) , stdD \n");
-    for(i=0;i<kListSize;i++){
-        fprintf(f,"%.3lf %.3f %lf %lf \n", kList[i] , 2*sin(M_PI*kList[i]) , ghostPropBoot[i][0] , ghostPropBoot[i][1]);
-    }
+    fprintf(f,"lambda_1=%lf+-%lf\n" , lambda1Boot[0] , lambda1Boot[1]);
+    fprintf(f,"lambda_1/lambda_Lap=%lf+-%lf\n" , lambda1Boot[0]/lambda_Lap , lambda1Boot[1]/lambda_Lap);
     fprintf(f,"#####################SAMPLES DUMP#######################\n");
-    fprintf(f,"\n");
-    for(i=0;i<kListSize;i++){
-        fprintf(f,"D(%.3lf)|",kList[i]);
-        for(j=0;j<N_cf;j++){
-            fprintf(f,"%lf|",ghostProp[i][j]);
-        }
-        fprintf(f,"\n");
+    fprintf(f,"lambda1");
+    for(j=0;j<N_cf;j++){
+        fprintf(f,"%lf\n",lambda1[j]);
     }
     fclose(f);
 
-    free(g);
-    free(lattice->U);
+    freeLatticeLinkSU2(lattice);
+    freeLatticeGaugeSU2(g);
+    freeLatticeColorVectorReal(eigenvector_guess);
+    free(lambda1);
 
     return(0);
 }

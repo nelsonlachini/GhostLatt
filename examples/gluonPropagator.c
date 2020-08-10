@@ -11,7 +11,7 @@
 #include <src/statistics.h>
 
 // global variables (to do: change that to local)
-const int N = 8;
+const int N = 4;
 
 const int Nt = N;
 const int totalV = N*N*N*Nt;
@@ -22,10 +22,10 @@ const int N2 = N*N;
 
 long * global_seed;
 FILE * f;
+double THERM_TIME=0e0, FIX_TIME=0e0;
 
 int main(){
     clock_t dtime = clock();
-    double therm_time;
     tseed();
 
 	//LOCAL PARAMETERS
@@ -40,9 +40,9 @@ int main(){
 	double initial_order = 0e0;		        	    //0 to all links initially equal to identity
     char file_name[MAXIMUM_NAME_LENGTH], aux[15];
     
-    LatticeSU2 * lattice = newLatticeSU2(N,Nt);
+    LatticeLinkSU2 * lattice = newLatticeLinkSU2(N,Nt);
     initl(lattice , initial_order);                                //cold initialization
-    thermalizeLattice(lattice, beta, N_therm, N_hb, N_mic);        //thermalization sweeps
+    THERM_TIME += thermalizeLattice(lattice, beta, N_therm, N_hb, N_mic);        //thermalization sweeps
 
     // allocating N_cf x N/2+1 table for gluon propagator measurements
     int kListSize = (int)(0.5*N)+1; //half the lattice only because the momentum propagator values repeat (PBC)
@@ -54,16 +54,16 @@ int main(){
     }
 
     //uncorrelation and measurement steps
-    double * g = malloc(sizeof(double)*totalV*4);   //allocating gauge transformation
-    initg(g);                                       //initializing gauge transformation
+    LatticeGaugeSU2 * g = newLatticeGaugeSU2(lattice->N,lattice->Nt);   //allocating gauge transformation
+    setidLatticeGaugeSU2(g);                                       //initializing gauge transformation
     double e2tol = 1e-14;                           // gauge fixing precision
     double p_stoch = 0.8; //= calibrate_stoc(lattice , 1e-10);    // choosing or calibrating gauge fixing parameter
   
     for(i=0;i<N_cf;i++){
         printf("\n########## Measurement step %d\n",i);
-        thermalizeLattice(lattice, beta, N_cor, N_hb, N_mic);    //N_cor uncorrelation steps of HOR type
+        THERM_TIME += thermalizeLattice(lattice, beta, N_cor, N_hb, N_mic);    //N_cor uncorrelation steps of HOR type
 
-        fixLatticeStoch(lattice, lattice, g, p_stoch, e2tol);
+        FIX_TIME += fixLatticeStoch(lattice, lattice, g, p_stoch, e2tol);
 
         printf("\nMeasurements:");
         measure_gluonp(lattice, &gluonProp , kList, kListSize, i);

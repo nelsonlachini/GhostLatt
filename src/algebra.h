@@ -44,20 +44,35 @@ void mmprodr( double * mout , double * B , double * C , int dim);
 
 void transpmr(double * Atransposed , double * A , int dim);
 
-void setzerovr(double * vr , int dim);
+void setzerovr(double * vr, int dim);
+
+void setzeroLatticeColorVectorReal(LatticeColorVectorReal * vr);
+
+void setzeroLatticeColorVectorComplex(LatticeColorVectorComplex * vc);
 
 double inprodvr(double * a , double * b , int dim);
 
+double inprodLatticeColorVectorReal(LatticeColorVectorReal * a , LatticeColorVectorReal * b);
+
+double complex inprodLatticeColorVectorComplex(LatticeColorVectorComplex * a , LatticeColorVectorComplex * b);
+
 double normvr(double * a , int dim);
+
+double normLatticeColorVectorReal(LatticeColorVectorReal * a);
 
 void cprodvr(double * vout , double k , double * v , int dim);
 
+void cprodLatticeColorVectorReal(LatticeColorVectorReal * vout , double k , LatticeColorVectorReal * v);
+
 void sumvr(double * vout , double * v1 , double * v2 , int dim);
+
+void sumLatticeColorVectorReal(LatticeColorVectorReal * vout , LatticeColorVectorReal * v1 , LatticeColorVectorReal * v2);
 
 void reunitvr(double * vector, int dim);
 
-void mvrprod(double * vout , double * B , double * vcolumn , int dim);
+void reunitLatticeColorVectorReal(LatticeColorVectorReal * vector);
 
+void mvrprod(double * vout , double * B , double * vcolumn , int dim);
 
 ////////////////////////////// GENERAL COMPLEX MATRIX ALGEBRA
 
@@ -81,7 +96,11 @@ void vmprodr(double complex * vout , double complex* vline , double * B , int di
 
 void sumvc(double complex * vout , double complex * v1 , double complex * v2 , int dim);
 
+void sumLatticeColorVectorComplex(LatticeColorVectorComplex * vout , LatticeColorVectorComplex * v1 , LatticeColorVectorComplex * v2);
+
 void cprodvc(double complex * vout , double complex k , double complex * v , int dim);
+
+void cprodLatticeColorVectorComplex(LatticeColorVectorComplex * vout , double complex k , LatticeColorVectorComplex * v);
 
 void hermcvc(double complex * Vdagger , double complex * V , int dim);
 
@@ -91,7 +110,11 @@ double complex inprodvc(double complex * a , double complex * b , int dim);
 
 double normvc(double complex * a , int dim);
 
+double normLatticeColorVectorComplex(LatticeColorVectorComplex * a);
+
 void reunitvc(double complex * vector, int dim);
+
+void reunitLatticeColorVectorComplex(LatticeColorVectorComplex * vector);
 
 void mvprodc(double complex * vout , double complex * B , double complex * vcolumn , int dim);
 
@@ -125,15 +148,27 @@ void setrandomvc(double complex * vc,int dim);
 
 void setonevr(double * vr,int dim);
 
+void setoneLatticeColorVectorReal(LatticeColorVectorReal * vr);
+
 void setplanewave(double complex * target, double * p , int atarget);
 
 void setplanewaveallcolors(double complex * target, double * p );
 
 void rsetplanewave(double * target, double * p , int atarget);
 
-void rsetplanewaveallcolors(double * target, double * p);
+void setoneLatticeColorVectorReal(LatticeColorVectorReal * vr);
+
+void setplanewaveLatticeColorVectorComplex(LatticeColorVectorComplex * target, double * p , int atarget);
+
+void setplanewaveallcolorsLatticeColorVectorComplex(LatticeColorVectorComplex * target, double * p );
+
+void setplanewaveLatticeColorVectorReal(LatticeColorVectorReal * target, double * p , int atarget);
+
+void setplanewaveallcolorsLatticeColorVectorReal(LatticeColorVectorReal * target, double * p);
 
 void setrandomvr(double * vr,int dim);
+
+void setrandomLatticeColorVectorReal(LatticeColorVectorReal * vr);
 
 void invMv(double * vout, double * vin);
 
